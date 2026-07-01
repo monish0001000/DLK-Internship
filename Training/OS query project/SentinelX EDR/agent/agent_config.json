@@ -1,0 +1,15 @@
+{
+    "backend_url": "http://localhost:8000/api/v1",
+    "agent_id": "39068a1b-bba0-45df-8c1e-12e94bf6bcde",
+    "poll_interval_seconds": 30,
+    "heartbeat_interval_seconds": 30,
+    "enabled_collectors": [
+        "processes",
+        "network",
+        "users",
+        "startup",
+        "services",
+        "programs"
+    ],
+    "uuid": "39068a1b-bba0-45df-8c1e-12e94bf6bcde"
+}

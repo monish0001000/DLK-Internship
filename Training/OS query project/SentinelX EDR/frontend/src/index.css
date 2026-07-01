@@ -1,0 +1,48 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Fira+Code:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-background text-textMain font-sans antialiased;
+  }
+  
+  /* Custom scrollbar for dark theme */
+  ::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-surface;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply bg-border rounded-full;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-gray-500;
+  }
+}
+
+@layer components {
+  .glass-panel {
+    @apply bg-surface/80 backdrop-blur-md border border-border rounded-xl shadow-lg;
+  }
+  
+  .btn-primary {
+    @apply bg-primary hover:bg-primaryHover text-white px-4 py-2 rounded-lg font-medium transition-colors duration-200 shadow-lg shadow-primary/20;
+  }
+  
+  .btn-secondary {
+    @apply bg-surfaceHighlight hover:bg-border text-textMain px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+  }
+  
+  .btn-danger {
+    @apply bg-danger/10 hover:bg-danger/20 text-danger border border-danger/20 px-4 py-2 rounded-lg font-medium transition-colors duration-200;
+  }
+  
+  .input-field {
+    @apply bg-background border border-border rounded-lg px-4 py-2 text-textMain focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all duration-200;
+  }
+}

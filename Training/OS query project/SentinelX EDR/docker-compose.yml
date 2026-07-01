@@ -1,0 +1,72 @@
+# ============================================
+# SentinelX EDR - Docker Compose
+# ============================================
+# Usage:
+#   docker-compose up -d          # Start all services
+#   docker-compose logs -f        # Follow logs
+#   docker-compose down           # Stop all services
+#   docker-compose up --build     # Rebuild and start
+# ============================================
+
+version: '3.8'
+
+services:
+  # ── Backend API Server ──────────────────────────────────────
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: sentinelx-backend
+    ports:
+      - "8000:8000"
+    environment:
+      - DATABASE_URL=sqlite:///./sentinelx.db
+      - DEMO_MODE=true
+      - DEBUG=false
+      - LOG_LEVEL=INFO
+      - CORS_ORIGINS=http://localhost:5173,http://localhost:3000,http://localhost:80
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - OPENROUTER_API_KEY=${OPENROUTER_API_KEY:-}
+    volumes:
+      - backend-data:/app/data
+      - ./backend/app/data:/app/app/data:ro  # Mount static data files
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  # ── Frontend Dashboard ──────────────────────────────────────
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: sentinelx-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000/api
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+  # ── Endpoint Agent (Simulated) ──────────────────────────────
+  agent:
+    build:
+      context: ./agent
+      dockerfile: Dockerfile
+    container_name: sentinelx-agent
+    environment:
+      - BACKEND_URL=http://backend:8000
+      - MODE=simulate
+      - COLLECTION_INTERVAL=60
+    depends_on:
+      backend:
+        condition: service_healthy
+    restart: unless-stopped
+
+volumes:
+  backend-data:
+    driver: local

@@ -1,0 +1,82 @@
+{
+    "timestamp": 1782469382.702986,
+    "overall_score": 100.0,
+    "duration_seconds": 98.8987307548523,
+    "results": [
+        {
+            "module": "test_auth",
+            "success": true,
+            "message": "Auth successful"
+        },
+        {
+            "module": "test_health",
+            "success": true,
+            "message": "Health check passed"
+        },
+        {
+            "module": "test_database",
+            "success": true,
+            "message": "Database connectivity passed (23 tables found)"
+        },
+        {
+            "module": "test_endpoints",
+            "success": true,
+            "message": "Endpoint registration and checkin passed (ID: fdc22223-5e9f-42a0-9faa-1ada72b8431e)"
+        },
+        {
+            "module": "test_telemetry",
+            "success": true,
+            "message": "Telemetry ingestion passed"
+        },
+        {
+            "module": "test_osquery",
+            "success": true,
+            "message": "OSQuery payload parsing and ingestion passed"
+        },
+        {
+            "module": "test_rules",
+            "success": true,
+            "message": "Rules API passed"
+        },
+        {
+            "module": "test_detection_engine",
+            "success": true,
+            "message": "Detection engine endpoints are accessible"
+        },
+        {
+            "module": "test_sigma",
+            "success": true,
+            "message": "Sigma Engine integration passed (Rules API accessible)"
+        },
+        {
+            "module": "test_ai",
+            "success": true,
+            "message": "AI Investigation API passed (Status: 422)"
+        },
+        {
+            "module": "test_audit",
+            "success": true,
+            "message": "Audit logs API passed (retrieved 0 logs)"
+        },
+        {
+            "module": "test_scheduler",
+            "success": true,
+            "message": "Scheduler verified via application lifecycle status"
+        },
+        {
+            "module": "test_websockets",
+            "success": true,
+            "message": "WebSocket connection passed (timeout waiting for message, but connection held)"
+        },
+        {
+            "module": "test_api_latency",
+            "success": true,
+            "message": "API Latency passed (Avg: 2033.16ms)"
+        },
+        {
+            "module": "benchmark",
+            "success": true,
+            "message": "Benchmark passed (10 payloads in 20.51s, 0.49 req/sec)"
+        }
+    ]
+}
