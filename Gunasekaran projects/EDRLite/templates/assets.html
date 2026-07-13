@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+{% block page_title %}Endpoint Assets{% endblock %}
+{% block page_subtitle %}Inventory and health of monitored systems{% endblock %}
+
+{% block content %}
+<div class="card">
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Status</th>
+                    <th>Hostname</th>
+                    <th>IP Address</th>
+                    <th>OS Version</th>
+                    <th style="text-align:right;">Total Events</th>
+                    <th style="text-align:right;">Open Alerts</th>
+                    <th>Risk Level</th>
+                    <th>Last Seen (UTC)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for item in endpoints %}
+                {% set ep = item.endpoint %}
+                <tr>
+                    <td>
+                        <div class="live-dot" style="animation:none; background:var(--sev-low); box-shadow:0 0 10px var(--sev-low);" title="Active"></div>
+                    </td>
+                    <td class="fw-600 text-blue">{{ ep.hostname }}</td>
+                    <td class="mono">{{ ep.ip_address }}</td>
+                    <td>{{ ep.os_version }}</td>
+                    <td style="text-align:right;" class="mono">{{ item.event_count }}</td>
+                    <td style="text-align:right;">
+                        {% if item.alert_count > 0 %}
+                            <span class="badge badge-critical">{{ item.alert_count }}</span>
+                        {% else %}
+                            <span class="text-muted mono">0</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="flex" style="align-items:center; gap:8px;">
+                            <span class="badge badge-{{ item.risk_level }}">{{ item.risk_level }}</span>
+                            <div class="risk-bar" style="width:60px;">
+                                <div class="risk-bar-fill" style="width:{{ item.risk_score }}%; background:var(--sev-{{ item.risk_level }});"></div>
+                            </div>
+                        </div>
+                    </td>
+                    <td class="mono" style="font-size:12px;">{{ ep.last_seen.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted">No endpoints registered. Wait for initial telemetry.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

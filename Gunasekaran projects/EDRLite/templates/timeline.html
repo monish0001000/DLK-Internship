@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+
+{% block page_title %}Event Timeline{% endblock %}
+{% block page_subtitle %}Chronological view of all endpoint activity{% endblock %}
+
+{% block content %}
+<div class="card mb-20">
+    <form class="filter-bar" method="GET" action="{{ url_for('analytics.timeline') }}">
+        <select name="type" class="filter-select">
+            <option value="">All Event Types</option>
+            <option value="process" {% if event_type == 'process' %}selected{% endif %}>Process Executions</option>
+            <option value="network" {% if event_type == 'network' %}selected{% endif %}>Network Connections</option>
+            <option value="startup" {% if event_type == 'startup' %}selected{% endif %}>Startup/Cron</option>
+            <option value="usb" {% if event_type == 'usb' %}selected{% endif %}>USB/Removable</option>
+        </select>
+        
+        <input type="text" name="hostname" class="filter-input" placeholder="Hostname (Optional)" value="{{ hostname }}">
+        
+        <select name="hours" class="filter-select">
+            <option value="1" {% if hours == 1 %}selected{% endif %}>Last 1 Hour</option>
+            <option value="24" {% if hours == 24 %}selected{% endif %}>Last 24 Hours</option>
+            <option value="72" {% if hours == 72 %}selected{% endif %}>Last 3 Days</option>
+            <option value="168" {% if hours == 168 %}selected{% endif %}>Last 7 Days</option>
+        </select>
+        
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Apply Filters</button>
+        <a href="{{ url_for('analytics.timeline') }}" class="btn btn-secondary">Clear</a>
+    </form>
+</div>
+
+<div class="card">
+    <div class="timeline-feed">
+        {% for event in events.items %}
+        <div class="timeline-item">
+            <div class="timeline-dot dot-{{ event.event_type }}"></div>
+            <div class="timeline-body">
+                <div class="flex-between mb-4">
+                    <div class="timeline-title">
+                        <span class="badge badge-{{ event.event_type }}">{{ event.event_type }}</span>
+                        <span class="fw-600" style="margin-left:8px;">{{ event.hostname }}</span>
+                        
+                        {% if event.alerts.count() > 0 %}
+                            <i class="fa-solid fa-triangle-exclamation text-critical" style="margin-left:8px;" title="Alert Generated"></i>
+                        {% endif %}
+                    </div>
+                    <div class="timeline-time">{{ event.timestamp.strftime('%Y-%m-%d %H:%M:%S UTC') }}</div>
+                </div>
+                <div class="timeline-detail mb-8">
+                    {% set d = event.get_data() %}
+                    {% if event.event_type == 'process' %}
+                        <b>{{ d.get('name', 'unknown') }}</b> (PID: {{ d.get('pid', '-') }}, UID: {{ d.get('uid', '-') }})<br>
+                        Cmd: <code>{{ d.get('cmdline', '') }}</code>
+                    {% elif event.event_type == 'network' %}
+                        <b>{{ d.get('protocol', 'TCP/UDP') }}</b> {{ d.get('state', 'ESTABLISHED') }}<br>
+                        {{ d.get('local_address') }}:{{ d.get('local_port') }} <i class="fa-solid fa-arrow-right-arrow-left text-muted"></i> {{ d.get('remote_address') }}:{{ d.get('remote_port') }}
+                    {% elif event.event_type == 'startup' %}
+                        <b>{{ d.get('name') or d.get('command') }}</b> ({{ d.get('source', '') }})<br>
+                        Path: <code>{{ d.get('path', '') }}</code>
+                    {% elif event.event_type == 'usb' %}
+                        <b>{{ d.get('vendor') }} {{ d.get('model') }}</b> (Serial: {{ d.get('serial', 'N/A') }})
+                    {% else %}
+                        <code>{{ d|tojson }}</code>
+                    {% endif %}
+                </div>
+                
+                {% set mitre_maps = event.mitre_maps.all() %}
+                {% if mitre_maps %}
+                    <div class="flex gap-8" style="flex-wrap:wrap;">
+                        {% for m in mitre_maps %}
+                            <span class="badge" style="background:rgba(124,58,237,0.15); color:var(--accent-purple); border:1px solid rgba(124,58,237,0.3);">
+                                {{ m.technique_id }}: {{ m.tactic }}
+                            </span>
+                        {% endfor %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        {% else %}
+        <div class="empty-state">
+            <i class="fa-solid fa-search"></i>
+            <p>No events found for the given filters.</p>
+        </div>
+        {% endfor %}
+    </div>
+    
+    <!-- Pagination -->
+    {% if events.pages > 1 %}
+    <div class="pagination mt-20">
+        {% if events.has_prev %}
+            <a href="{{ url_for('analytics.timeline', page=events.prev_num, type=event_type, hostname=hostname, hours=hours) }}" class="page-link">&laquo;</a>
+        {% endif %}
+        
+        <span class="page-link active">{{ events.page }} / {{ events.pages }}</span>
+        
+        {% if events.has_next %}
+            <a href="{{ url_for('analytics.timeline', page=events.next_num, type=event_type, hostname=hostname, hours=hours) }}" class="page-link">&raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block page_title %}MITRE ATT&CK Matrix{% endblock %}
+{% block page_subtitle %}Tactics and Techniques observed across the environment{% endblock %}
+
+{% block content %}
+<div class="stats-grid mb-28">
+    <div class="stat-card purple">
+        <div class="stat-info">
+            <div class="stat-value">{{ total_techniques }}</div>
+            <div class="stat-label">Unique Techniques Detected</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-chess-board"></i></div>
+    </div>
+    <div class="stat-card red">
+        <div class="stat-info">
+            <div class="stat-value">{{ total_detections }}</div>
+            <div class="stat-label">Total ATT&CK Mappings</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-crosshairs"></i></div>
+    </div>
+</div>
+
+<div class="card" style="overflow-x:auto;">
+    <div style="min-width: 1200px;">
+        <div class="mitre-grid" style="display:flex; gap:8px;">
+            {% for tactic in tactic_order %}
+                {% set techniques = tactic_map.get(tactic, []) %}
+                <div class="mitre-tactic-col" style="flex:1; min-width:160px;">
+                    <div class="mitre-tactic-header">
+                        {{ tactic }}
+                        <div style="font-size:9px; color:var(--text-muted); font-weight:normal; margin-top:4px;">
+                            {{ techniques|length }} detection(s)
+                        </div>
+                    </div>
+                    
+                    {% for tech in techniques %}
+                    <div class="mitre-technique detected">
+                        <div class="t-id">{{ tech.id }} <span class="t-count">{{ tech.count }}</span></div>
+                        <div class="fw-600">{{ tech.name }}</div>
+                    </div>
+                    {% else %}
+                    <div class="mitre-technique" style="text-align:center; padding:12px 8px; opacity:0.5;">
+                        <i class="fa-solid fa-shield" style="display:block; font-size:16px; margin-bottom:4px;"></i>
+                        <span style="font-size:10px;">No Detections</span>
+                    </div>
+                    {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}

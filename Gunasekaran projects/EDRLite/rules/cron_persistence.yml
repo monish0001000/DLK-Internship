@@ -1,0 +1,12 @@
+title: Cron Job Persistence Detected
+description: Detects new or modified crontab entries which may indicate persistence mechanisms
+level: medium
+event_types:
+  - startup
+mitre:
+  technique_id: T1053
+  technique_name: Scheduled Task/Job Cron
+  tactic: Persistence
+detection:
+  condition:
+    source: crontab

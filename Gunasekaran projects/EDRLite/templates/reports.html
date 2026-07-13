@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+
+{% block page_title %}Reports{% endblock %}
+{% block page_subtitle %}Generate and download PDF/CSV incident reports{% endblock %}
+
+{% block content %}
+<div class="grid-2 mb-28">
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-file-pdf text-critical"></i> Executive PDF Report</div>
+        </div>
+        <p class="text-muted" style="font-size:13px; margin-bottom:20px;">
+            Generates a high-level PDF summary containing executive metrics, top MITRE techniques, and critical open alerts. Ideal for management review.
+        </p>
+        <a href="{{ url_for('analytics.generate_pdf_report') }}" class="btn btn-primary" target="_blank">
+            <i class="fa-solid fa-download"></i> Generate PDF
+        </a>
+    </div>
+    
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-file-csv text-low"></i> Full Data Export (CSV)</div>
+        </div>
+        <p class="text-muted" style="font-size:13px; margin-bottom:20px;">
+            Generates a ZIP archive containing raw events, alerts, MITRE mappings, and risk scores in CSV format. Ideal for external SIEM integration or forensic analysis.
+        </p>
+        <a href="{{ url_for('analytics.generate_csv_report') }}" class="btn btn-primary" target="_blank">
+            <i class="fa-solid fa-download"></i> Generate CSV (ZIP)
+        </a>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-header">
+        <div class="card-title"><i class="fa-solid fa-folder-open"></i> Previously Generated Reports</div>
+    </div>
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>Filename</th>
+                    <th>Size</th>
+                    <th>Generated (UTC)</th>
+                    <th style="text-align:right;">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for f in files %}
+                <tr>
+                    <td class="fw-600">
+                        {% if f.name.endswith('.pdf') %}
+                            <i class="fa-solid fa-file-pdf text-critical" style="margin-right:8px;"></i>
+                        {% else %}
+                            <i class="fa-solid fa-file-zipper text-low" style="margin-right:8px;"></i>
+                        {% endif %}
+                        {{ f.name }}
+                    </td>
+                    <td class="mono text-muted">{{ (f.size / 1024)|round(1) }} KB</td>
+                    <td class="mono">{{ f.modified }}</td>
+                    <td style="text-align:right;">
+                        <span class="text-muted" style="font-size:11px; font-style:italic;">Stored locally in reports_output/</span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="4" class="text-center text-muted" style="padding:30px;">No previous reports found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

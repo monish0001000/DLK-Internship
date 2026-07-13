@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EDRLite{% endblock %} | EDR Platform</title>
+    
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+    <!-- Flash Messages -->
+    <div class="flash-container">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="flash flash-{{ category }}">
+                        {% if category == 'success' %}<i class="fa-solid fa-check-circle"></i>
+                        {% elif category == 'danger' %}<i class="fa-solid fa-triangle-exclamation"></i>
+                        {% elif category == 'warning' %}<i class="fa-solid fa-circle-exclamation"></i>
+                        {% else %}<i class="fa-solid fa-circle-info"></i>{% endif %}
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    {% if current_user.is_authenticated %}
+    <div class="layout">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-brand">
+                <div class="logo-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                <div class="brand-text">
+                    <h1>EDRLite</h1>
+                    <span>Defense Platform</span>
+                </div>
+            </div>
+
+            <nav class="nav-section">
+                <div class="nav-label">Core View</div>
+                <a href="{{ url_for('analytics.dashboard') }}" class="nav-item {% if request.endpoint == 'analytics.dashboard' %}active{% endif %}">
+                    <i class="fa-solid fa-border-all"></i> Dashboard
+                </a>
+                <a href="{{ url_for('analytics.timeline') }}" class="nav-item {% if request.endpoint == 'analytics.timeline' %}active{% endif %}">
+                    <i class="fa-solid fa-stream"></i> Event Timeline
+                </a>
+                <a href="{{ url_for('analytics.alerts') }}" class="nav-item {% if request.endpoint == 'analytics.alerts' %}active{% endif %}">
+                    <i class="fa-solid fa-bell"></i> Alerts
+                </a>
+                <a href="{{ url_for('analytics.mitre') }}" class="nav-item {% if request.endpoint == 'analytics.mitre' %}active{% endif %}">
+                    <i class="fa-solid fa-chess-board"></i> MITRE ATT&CK
+                </a>
+                
+                <div class="nav-label" style="margin-top: 20px;">Analysis</div>
+                <a href="{{ url_for('analytics.hunting') }}" class="nav-item {% if request.endpoint == 'analytics.hunting' %}active{% endif %}">
+                    <i class="fa-solid fa-crosshairs"></i> Threat Hunting
+                </a>
+                <a href="{{ url_for('analytics.assets') }}" class="nav-item {% if request.endpoint == 'analytics.assets' %}active{% endif %}">
+                    <i class="fa-solid fa-server"></i> Endpoints
+                </a>
+                <a href="{{ url_for('analytics.reports') }}" class="nav-item {% if request.endpoint == 'analytics.reports' %}active{% endif %}">
+                    <i class="fa-solid fa-file-pdf"></i> Reports
+                </a>
+            </nav>
+
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <div class="user-avatar"><i class="fa-solid fa-user-astronaut"></i></div>
+                    <div>
+                        <div class="user-name">{{ current_user.username }}</div>
+                        <div class="user-role">Administrator</div>
+                    </div>
+                </div>
+                <a href="{{ url_for('auth.logout') }}" class="btn-logout">
+                    <i class="fa-solid fa-arrow-right-from-bracket"></i> Sign Out
+                </a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <header class="topbar">
+                <div class="topbar-left">
+                    <h2>{% block page_title %}Dashboard{% endblock %}</h2>
+                    <p>{% block page_subtitle %}Overview and active threats{% endblock %}</p>
+                </div>
+                <div class="topbar-right">
+                    <div class="live-indicator">
+                        <div class="live-dot"></div> Live Collection Active
+                    </div>
+                    <div class="clock" id="liveClock">--:--:-- UTC</div>
+                </div>
+            </header>
+
+            <div class="page-content">
+                {% block content %}{% endblock %}
+            </div>
+        </main>
+    </div>
+    {% else %}
+        {% block login_content %}{% endblock %}
+    {% endif %}
+
+    <!-- Main JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.7.2/socket.io.min.js"></script>
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

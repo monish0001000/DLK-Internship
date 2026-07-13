@@ -1,0 +1,21 @@
+{
+  "description": "Known malware file hashes (MD5/SHA256)",
+  "version": "1.0",
+  "iocs": [
+    "44d88612fea8a8f36de82e1278abb02f",
+    "3395856ce81f2b7382dee72602f798b6",
+    "275a021bbfb6489e54d471899f7db9d1",
+    "e1c5a82ddca4c9d43e15a36b1b7e8cd4",
+    "d41d8cd98f00b204e9800998ecf8427e",
+    "5d41402abc4b2a76b9719d911017c592",
+    "7215ee9c7d9dc229d2921a40e899ec5f",
+    "aab3238922bcc25a6f606eb525ffdc56",
+    "9f89c84a559f573636a47ff8daed0d33",
+    "c4ca4238a0b923820dcc509a6f75849b",
+    "eccbc87e4b5ce2fe28308fd9f2a7baf3",
+    "8277e0910d750195b448797616e091ad",
+    "a87ff679a2f3e71d9181a67b7542122c",
+    "e4da3b7fbbce2345d7772b0674a318d5",
+    "1679091c5a880faf6fb5e6087eb1b2dc"
+  ]
+}

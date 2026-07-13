@@ -1,0 +1,19 @@
+title: Suspicious Scripting Interpreter Execution
+description: Detects execution of common scripting interpreters used in attacks (netcat, python shells, reverse shells)
+level: high
+event_types:
+  - process
+mitre:
+  technique_id: T1059
+  technique_name: Command and Scripting Interpreter
+  tactic: Execution
+detection:
+  condition:
+    name:
+      - nc
+      - ncat
+      - netcat
+      - msfconsole
+      - msfvenom
+      - socat
+      - cryptcat

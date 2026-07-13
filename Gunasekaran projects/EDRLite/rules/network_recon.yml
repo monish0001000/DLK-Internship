@@ -1,0 +1,20 @@
+title: Network Reconnaissance Tool Detected
+description: Detects use of common network scanning and reconnaissance tools
+level: high
+event_types:
+  - process
+mitre:
+  technique_id: T1046
+  technique_name: Network Service Scanning
+  tactic: Discovery
+detection:
+  condition:
+    name:
+      - nmap
+      - masscan
+      - nikto
+      - dirb
+      - gobuster
+      - wfuzz
+      - nbtscan
+      - arp-scan

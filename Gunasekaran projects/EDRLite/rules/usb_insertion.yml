@@ -1,0 +1,12 @@
+title: USB Removable Device Inserted
+description: Detects insertion of a USB removable storage device which may be used for data exfiltration or malware delivery
+level: medium
+event_types:
+  - usb
+mitre:
+  technique_id: T1091
+  technique_name: Replication Through Removable Media
+  tactic: Lateral Movement
+detection:
+  condition:
+    removable: "1"

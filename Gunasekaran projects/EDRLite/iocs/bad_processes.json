@@ -1,0 +1,20 @@
+{
+  "description": "Known malicious / suspicious process names",
+  "version": "1.0",
+  "iocs": [
+    "nc", "ncat", "netcat", "nmap", "masscan",
+    "msfconsole", "msfvenom", "metasploit",
+    "hydra", "medusa", "john", "hashcat", "aircrack-ng",
+    "mimikatz", "lazagne", "wce",
+    "Empire", "powercat", "pwsh",
+    "cobaltstrike", "cobalt_strike", "beacon",
+    "sqlmap", "nikto", "dirb", "gobuster", "wfuzz",
+    "socat", "cryptcat", "chisel", "ligolo",
+    "xmrig", "minerd", "cpuminer",
+    "keylogger", "rat", "backdoor",
+    "tor", "torsocks",
+    "ptrace", "strace",
+    "tcpdump", "wireshark", "tshark", "ettercap", "bettercap",
+    "arpspoof", "dnsspoof", "dsniff"
+  ]
+}

@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+
+{% block page_title %}Threat Hunting (osquery){% endblock %}
+{% block page_subtitle %}Execute real-time SQL queries against the local endpoint{% endblock %}
+
+{% block content %}
+<div class="card mb-20">
+    <div class="card-header" style="border-bottom:none; margin-bottom:10px; padding-bottom:0;">
+        <div class="card-title"><i class="fa-solid fa-bolt text-blue"></i> Fast Queries</div>
+    </div>
+    <div class="preset-chips" style="padding: 0 24px;">
+        {% for preset in presets %}
+        <div class="preset-chip" data-query="{{ preset.query }}">
+            <i class="fa-solid fa-code" style="margin-right:5px;"></i> {{ preset.title }}
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<div class="grid-21">
+    <!-- Editor -->
+    <div class="card" style="padding:0; overflow:hidden;">
+        <div class="query-editor">
+            <div class="query-editor-header">
+                <div><i class="fa-brands fa-searchengin"></i> osqueryi SQL Editor</div>
+                <button id="runQueryBtn" class="btn btn-primary btn-sm"><i class="fa-solid fa-play"></i> Run Query</button>
+            </div>
+            <textarea id="queryInput" placeholder="SELECT * FROM processes LIMIT 10;" spellcheck="false"></textarea>
+        </div>
+    </div>
+    
+    <!-- Instructions -->
+    <div class="card">
+        <div class="card-header"><div class="card-title"><i class="fa-solid fa-book"></i> Reference</div></div>
+        <p class="text-muted" style="font-size:13px; margin-bottom:12px;">
+            Run live SQL queries against the underlying endpoint operating system using osquery.
+        </p>
+        <ul style="font-size:12px; color:var(--text-secondary); padding-left:16px; margin-bottom:12px;">
+            <li class="mb-4"><code>processes</code> - running programs</li>
+            <li class="mb-4"><code>listening_ports</code> - open ports</li>
+            <li class="mb-4"><code>process_open_sockets</code> - network conn</li>
+            <li class="mb-4"><code>users</code> - local user accounts</li>
+            <li class="mb-4"><code>startup_items</code> - auto-start apps</li>
+        </ul>
+        <div class="flash flash-warning" style="padding:10px; font-size:11px;">
+            <i class="fa-solid fa-triangle-exclamation"></i>
+            Heavy queries (no LIMIT) may cause the endpoint to timeout. Always use LIMIT for discovery.
+        </div>
+    </div>
+</div>
+
+<!-- Results -->
+<div class="card mt-20">
+    <div class="card-header">
+        <div class="card-title"><i class="fa-solid fa-table"></i> Query Results</div>
+    </div>
+    <div id="queryResults">
+        <div class="empty-state">
+            <i class="fa-solid fa-terminal"></i>
+            <p>Enter a query above and click Run to see results.</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

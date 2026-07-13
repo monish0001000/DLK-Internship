@@ -1,0 +1,94 @@
+{% extends "base.html" %}
+
+{% block page_title %}Alert Management{% endblock %}
+{% block page_subtitle %}Review and act on generated security alerts{% endblock %}
+
+{% block content %}
+<div class="card mb-20">
+    <form class="filter-bar" method="GET" action="{{ url_for('analytics.alerts') }}">
+        <select name="severity" class="filter-select">
+            <option value="">All Severities</option>
+            <option value="critical" {% if severity == 'critical' %}selected{% endif %}>Critical</option>
+            <option value="high" {% if severity == 'high' %}selected{% endif %}>High</option>
+            <option value="medium" {% if severity == 'medium' %}selected{% endif %}>Medium</option>
+            <option value="low" {% if severity == 'low' %}selected{% endif %}>Low</option>
+        </select>
+        
+        <select name="status" class="filter-select">
+            <option value="">All Statuses</option>
+            <option value="open" {% if status == 'open' %}selected{% endif %}>Open</option>
+            <option value="acknowledged" {% if status == 'acknowledged' %}selected{% endif %}>Acknowledged</option>
+            <option value="escalated" {% if status == 'escalated' %}selected{% endif %}>Escalated</option>
+            <option value="false_positive" {% if status == 'false_positive' %}selected{% endif %}>False Positive</option>
+        </select>
+        
+        <button type="submit" class="btn btn-primary"><i class="fa-solid fa-filter"></i> Apply Filters</button>
+        <a href="{{ url_for('analytics.alerts') }}" class="btn btn-secondary">Clear</a>
+    </form>
+</div>
+
+<div class="card">
+    <div class="table-wrapper">
+        <table class="data-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Timestamp (UTC)</th>
+                    <th>Severity</th>
+                    <th>Status</th>
+                    <th>Alert Name</th>
+                    <th>Host</th>
+                    <th>Source</th>
+                    <th style="text-align:right;">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for alert in alerts.items %}
+                <tr>
+                    <td class="text-muted">#{{ alert.id }}</td>
+                    <td class="mono" style="font-size:12px;">{{ alert.timestamp.strftime('%Y-%m-%d %H:%M:%S') }}</td>
+                    <td><span class="badge badge-{{ alert.severity }}">{{ alert.severity }}</span></td>
+                    <td><span class="badge badge-{{ alert.status }}">{{ alert.status|replace('_', ' ') }}</span></td>
+                    <td>
+                        <div class="fw-600">{{ alert.alert_name }}</div>
+                        <div class="text-muted" style="font-size:11px;" title="{{ alert.description }}">{{ alert.description|truncate(50) }}</div>
+                    </td>
+                    <td class="fw-600">{{ alert.hostname }}</td>
+                    <td>
+                        <span class="badge" style="background:rgba(255,255,255,0.05);border:1px solid rgba(255,255,255,0.1);color:var(--text-secondary);">
+                            {{ alert.source|upper }}
+                        </span>
+                    </td>
+                    <td style="text-align:right;">
+                        <form method="POST" action="{{ url_for('analytics.update_alert', alert_id=alert.id) }}" style="display:inline-flex; gap:6px;">
+                            {% if alert.status == 'open' %}
+                                <button type="submit" name="action" value="acknowledge" class="btn btn-xs btn-success" title="Acknowledge"><i class="fa-solid fa-check"></i></button>
+                                <button type="submit" name="action" value="escalate" class="btn btn-xs btn-danger" title="Escalate"><i class="fa-solid fa-fire"></i></button>
+                                <button type="submit" name="action" value="false_positive" class="btn btn-xs btn-secondary" title="Mark False Positive"><i class="fa-solid fa-ban"></i></button>
+                            {% else %}
+                                <button type="submit" name="action" value="reopen" class="btn btn-xs btn-secondary" title="Reopen Alert"><i class="fa-solid fa-rotate-left"></i></button>
+                            {% endif %}
+                        </form>
+                    </td>
+                </tr>
+                {% else %}
+                <tr><td colspan="8" class="text-center text-muted" style="padding:40px;">No alerts found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    
+    <!-- Pagination -->
+    {% if alerts.pages > 1 %}
+    <div class="pagination mt-20">
+        {% if alerts.has_prev %}
+            <a href="{{ url_for('analytics.alerts', page=alerts.prev_num, severity=severity, status=status) }}" class="page-link">&laquo;</a>
+        {% endif %}
+        <span class="page-link active">{{ alerts.page }} / {{ alerts.pages }}</span>
+        {% if alerts.has_next %}
+            <a href="{{ url_for('analytics.alerts', page=alerts.next_num, severity=severity, status=status) }}" class="page-link">&raquo;</a>
+        {% endif %}
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

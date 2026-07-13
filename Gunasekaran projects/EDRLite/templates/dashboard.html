@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+
+{% block page_title %}Security Dashboard{% endblock %}
+{% block page_subtitle %}Platform overview and critical metrics{% endblock %}
+
+{% block content %}
+<!-- Stats Grid -->
+<div class="stats-grid">
+    <div class="stat-card blue">
+        <div class="stat-info">
+            <div class="stat-value">{{ total_events }}</div>
+            <div class="stat-label">Total Events Processed</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-server"></i></div>
+    </div>
+    
+    <div class="stat-card red">
+        <div class="stat-info">
+            <div class="stat-value">{{ critical_alerts }}</div>
+            <div class="stat-label">Critical Alerts (Open)</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-triangle-exclamation"></i></div>
+    </div>
+    
+    <div class="stat-card amber">
+        <div class="stat-info">
+            <div class="stat-value">{{ active_alerts }}</div>
+            <div class="stat-label">Total Open Alerts</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-bell"></i></div>
+    </div>
+    
+    <div class="stat-card purple">
+        <div class="stat-info">
+            <div class="stat-value">{{ mitre_count }}</div>
+            <div class="stat-label">MITRE Techniques</div>
+        </div>
+        <div class="stat-icon"><i class="fa-solid fa-chess-knight"></i></div>
+    </div>
+</div>
+
+<div class="grid-21 mb-28">
+    <!-- Trend Chart -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-chart-line"></i> Event Collection Trend (7 Days)</div>
+        </div>
+        <div class="chart-wrap" style="height: 250px;">
+            <canvas id="trendChart" data-labels='{{ daily_labels|safe }}' data-counts='{{ daily_counts|safe }}'></canvas>
+        </div>
+    </div>
+    
+    <!-- Risk Distribution -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-chart-pie"></i> Risk Distribution</div>
+        </div>
+        <div class="chart-wrap" style="height: 250px; display:flex; justify-content:center;">
+            <canvas id="riskChart" data-risks='{{ risk_dist|tojson|safe }}'></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="grid-12">
+    <!-- Top Techniques -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-fire-flame-curved"></i> Top MITRE Techniques</div>
+            <a href="{{ url_for('analytics.mitre') }}" class="btn btn-xs btn-secondary">View Matrix</a>
+        </div>
+        <div class="table-wrapper">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>Technique</th>
+                        <th style="text-align:right;">Hits</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for tech in top_techniques %}
+                    <tr>
+                        <td>
+                            <div class="fw-600">{{ tech.technique_name }}</div>
+                            <div class="text-muted" style="font-size:11px;">{{ tech.technique_id }}</div>
+                        </td>
+                        <td style="text-align:right;">
+                            <span class="badge badge-critical">{{ tech.cnt }}</span>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr><td colspan="2" class="text-center text-muted">No techniques detected yet.</td></tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    
+    <!-- Recent Events -->
+    <div class="card">
+        <div class="card-header">
+            <div class="card-title"><i class="fa-solid fa-stream"></i> Real-time Telemetry</div>
+            <a href="{{ url_for('analytics.timeline') }}" class="btn btn-xs btn-secondary">View Timeline</a>
+        </div>
+        <div class="timeline-feed" style="max-height: 300px; overflow-y:auto; padding-right:10px;">
+            {% for event in recent_events %}
+            <div class="timeline-item">
+                <div class="timeline-dot dot-{{ event.event_type }}"></div>
+                <div class="timeline-body">
+                    <div class="flex-between mb-4">
+                        <div class="timeline-title">
+                            <span style="text-transform:uppercase; font-size:11px; margin-right:8px; color:var(--accent-cyan)">[{{ event.event_type }}]</span>
+                            {{ event.hostname }}
+                        </div>
+                        <div class="timeline-time">{{ event.timestamp.strftime('%H:%M:%S UTC') }}</div>
+                    </div>
+                    <div class="timeline-detail">
+                        {% set d = event.get_data() %}
+                        {% if event.event_type == 'process' %}
+                            {{ d.get('name', 'unknown') }} (PID: {{ d.get('pid', '-') }}) - {{ d.get('cmdline', '') }}
+                            {% if d.get('pid') %}
+                            <button class="btn btn-xs btn-danger btn-kill" data-pid="{{ d.get('pid') }}" style="margin-left:10px; padding:2px 6px;" title="Kill Process"><i class="fa-solid fa-skull"></i> Kill</button>
+                            {% endif %}
+                        {% elif event.event_type == 'network' %}
+                            <strong>{{ d.get('name', 'unknown_app') }}</strong> : {{ d.get('local_address') }}:{{ d.get('local_port') }} <i class="fa-solid fa-arrow-right-arrow-left text-muted"></i> {{ d.get('remote_address') }}:{{ d.get('remote_port') }} ({{ d.get('state') }})
+                        {% elif event.event_type == 'startup' %}
+                            {{ d.get('name') or d.get('command') }} ({{ d.get('source', '') }})
+                        {% else %}
+                            {{ d|string|truncate(120) }}
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% else %}
+            <div class="empty-state">
+                <i class="fa-solid fa-wind"></i>
+                <p>Waiting for osquery telemetry...</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+{% endblock %}
