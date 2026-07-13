@@ -62,55 +62,58 @@ async def metrics_ticker():
     while True:
         await asyncio.sleep(1.0)
         
-        now = time.time()
-        
-        async with state.lock:
-            dt = now - state.last_tick_time
-            if dt < 0.001: dt = 0.001
+        try:
+            now = time.time()
             
-            payloads = []
-            
-            total_pkts = sum(state.node_window_packets.values())
-            total_bytes = sum(state.node_window_bytes.values())
-            
-            global_pps = total_pkts / dt
-            global_bps = (total_bytes * 8) / dt
-            
-            payloads.append({
-                "node_id": "All Nodes",
-                "timestamp": int(now * 1000),
-                "pps": int(global_pps),
-                "bps": int(global_bps),
-                "active_flows": len(state.active_flows)
-            })
-            
-            for node_id in list(state.nodes_last_seen.keys()):
-                pkts = state.node_window_packets.get(node_id, 0)
-                byts = state.node_window_bytes.get(node_id, 0)
+            async with state.lock:
+                dt = now - state.last_tick_time
+                if dt < 0.001: dt = 0.001
                 
-                pps = pkts / dt
-                bps = (byts * 8) / dt
-                node_flows = sum(1 for flow_key in state.active_flows if flow_key[0] == node_id)
+                payloads = []
+                
+                total_pkts = sum(state.node_window_packets.values())
+                total_bytes = sum(state.node_window_bytes.values())
+                
+                global_pps = total_pkts / dt
+                global_bps = (total_bytes * 8) / dt
                 
                 payloads.append({
-                    "node_id": node_id,
+                    "node_id": "All Nodes",
                     "timestamp": int(now * 1000),
-                    "pps": int(pps),
-                    "bps": int(bps),
-                    "active_flows": node_flows
+                    "pps": int(global_pps),
+                    "bps": int(global_bps),
+                    "active_flows": len(state.active_flows)
                 })
-            
-            state.node_window_packets.clear()
-            state.node_window_bytes.clear()
-            state.last_tick_time = now
-            
-        for p in payloads:
-            msg = json.dumps({"type": "metric_tick", "payload": p})
-            for q in list(state.clients):
-                try:
-                    q.put_nowait(msg)
-                except asyncio.QueueFull:
-                    pass
+                
+                for node_id in list(state.nodes_last_seen.keys()):
+                    pkts = state.node_window_packets.get(node_id, 0)
+                    byts = state.node_window_bytes.get(node_id, 0)
+                    
+                    pps = pkts / dt
+                    bps = (byts * 8) / dt
+                    node_flows = sum(1 for flow_key in state.active_flows if flow_key[0] == node_id)
+                    
+                    payloads.append({
+                        "node_id": node_id,
+                        "timestamp": int(now * 1000),
+                        "pps": int(pps),
+                        "bps": int(bps),
+                        "active_flows": node_flows
+                    })
+                
+                state.node_window_packets.clear()
+                state.node_window_bytes.clear()
+                state.last_tick_time = now
+                
+            for p in payloads:
+                msg = json.dumps({"type": "metric_tick", "payload": p})
+                for q in list(state.clients):
+                    try:
+                        q.put_nowait(msg)
+                    except asyncio.QueueFull:
+                        pass
+        except Exception as e:
+            print(f"ERROR in metrics_ticker: {e}")
 
 @app.get("/api/status")
 async def get_status():

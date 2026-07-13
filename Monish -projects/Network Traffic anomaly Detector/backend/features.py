@@ -35,13 +35,14 @@ async def process_flows_window():
             
             for flow_key, packets in list(state.active_flows.items()):
                 last_seen = state.flow_last_seen.get(flow_key, 0)
+                last_seen_sec = last_seen / 1000.0
                 
-                if now - last_seen > 10.0:
+                if now - last_seen_sec > 10.0:
                     stale_keys.append(flow_key)
                     continue
                 
                 # Only score if active recently
-                if now - last_seen > 2.0:
+                if now - last_seen_sec > 2.0:
                     continue
                     
                 if len(packets) < 5:
@@ -87,23 +88,26 @@ async def process_flows_window():
                     'bytes_per_second': bytes_per_second
                 }
                 
-                # Score with model
-                score, severity = anomaly_model.score(features)
-                
-                if score < 0:
-                    alert = {
-                        "id": str(uuid.uuid4()),
-                        "node_id": node_id,
-                        "timestamp": int(now * 1000),
-                        "severity": severity,
-                        "src_ip": src_ip,
-                        "dst_ip": dst_ip,
-                        "reason": f"Anomaly score {score:.2f}",
-                        "score": score,
-                        "details": features
-                    }
-                    state.alerts.append(alert)
-                    alerts_to_send.append(alert)
+                try:
+                    # Score with model
+                    score, severity = anomaly_model.score(features)
+                    
+                    if score < 0:
+                        alert = {
+                            "id": str(uuid.uuid4()),
+                            "node_id": node_id,
+                            "timestamp": int(now * 1000),
+                            "severity": severity,
+                            "src_ip": src_ip,
+                            "dst_ip": dst_ip,
+                            "reason": f"Anomaly score {score:.2f}",
+                            "score": score,
+                            "details": features
+                        }
+                        state.alerts.append(alert)
+                        alerts_to_send.append(alert)
+                except Exception as e:
+                    print(f"ERROR inside features loop: {e}")
             
             # Cleanup stale flows
             for k in stale_keys:

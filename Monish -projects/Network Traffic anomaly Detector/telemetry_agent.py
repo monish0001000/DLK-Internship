@@ -92,24 +92,35 @@ def generate_telemetry(target_url):
 
 def fallback_generator(session, endpoint, local_ip):
     ips = [local_ip, "8.8.8.8", "1.1.1.1", "10.0.0.1", "192.168.1.254"]
-    while True:
+    
+    # Pre-generate some mock flows so we get > 5 packets per flow
+    mock_flows = []
+    for _ in range(10):
         src_ip = random.choice(ips)
         dst_ip = random.choice(ips)
         while src_ip == dst_ip:
             dst_ip = random.choice(ips)
-            
         proto = random.choices(["TCP", "UDP", "ICMP"], weights=[0.8, 0.15, 0.05])[0]
+        src_port = random.randint(1024, 65535)
+        dst_port = random.choice([80, 443, 53, 22])
+        mock_flows.append({
+            "src_ip": src_ip, "dst_ip": dst_ip, "proto": proto, 
+            "src_port": src_port, "dst_port": dst_port
+        })
+        
+    while True:
+        flow = random.choice(mock_flows)
         
         pkt = {
             "node_id": socket.gethostname(),
             "timestamp": int(time.time() * 1000),
-            "src_ip": src_ip,
-            "dst_ip": dst_ip,
-            "src_port": random.randint(1024, 65535),
-            "dst_port": random.choice([80, 443, 53, 22]),
-            "proto": proto,
+            "src_ip": flow["src_ip"],
+            "dst_ip": flow["dst_ip"],
+            "src_port": flow["src_port"],
+            "dst_port": flow["dst_port"],
+            "proto": flow["proto"],
             "length": random.randint(64, 1500),
-            "flags": random.choice(["SYN", "ACK", "SYN,ACK", ""]) if proto == "TCP" else ""
+            "flags": random.choice(["SYN", "ACK", "SYN,ACK", ""]) if flow["proto"] == "TCP" else ""
         }
         
         try:

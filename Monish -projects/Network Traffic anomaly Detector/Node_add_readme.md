@@ -29,7 +29,7 @@ pip install requests psutil
 Run the script, replacing `<HOST_IP>` with the IP address of the machine running the NEMESYS backend:
 
 ```bash
-python telemetry_agent.py --url http://<HOST_IP>:8000
+python telemetry_agent.py --url http://<HOST_IP>:8001
 ```
 
 > **Note for Android/Termux:** If Android permissions block `psutil` from reading the socket tables natively, the script will automatically fallback to generating realistic mock traffic telemetry so you can still verify the connection to the dashboard.
@@ -58,12 +58,12 @@ You need to specify the network interface you want to monitor (e.g., `eth0`, `wl
 
 **On Linux:**
 ```bash
-sudo python tshark_agent.py -i wlan0 --url http://<HOST_IP>:8000
+sudo python tshark_agent.py -i wlan0 --url http://<HOST_IP>:8001
 ```
 
 **On Windows (Run as Administrator):**
 ```bash
-python tshark_agent.py -i "Wi-Fi" --url http://<HOST_IP>:8000
+python tshark_agent.py -i "Wi-Fi" --url http://<HOST_IP>:8001
 ```
 
 ---

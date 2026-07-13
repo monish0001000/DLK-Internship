@@ -21,17 +21,19 @@ export default function App() {
   const [protocolStats, setProtocolStats] = React.useState([])
   const [topTalkers, setTopTalkers] = React.useState([])
   
+  const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api'
+
   React.useEffect(() => {
     const fetchData = async () => {
       try {
-        const resNodes = await fetch(`http://localhost:8000/api/nodes`)
+        const resNodes = await fetch(`${API_URL}/nodes`)
         if (resNodes.ok) setNodes(await resNodes.json())
         
         const q = selectedNode === "All Nodes" ? "" : `?node_id=${selectedNode}`
-        const resProto = await fetch(`http://localhost:8000/api/stats/protocols${q}`)
+        const resProto = await fetch(`${API_URL}/stats/protocols${q}`)
         if (resProto.ok) setProtocolStats(await resProto.json())
         
-        const resTalkers = await fetch(`http://localhost:8000/api/stats/top-talkers${q}`)
+        const resTalkers = await fetch(`${API_URL}/stats/top-talkers${q}`)
         if (resTalkers.ok) setTopTalkers(await resTalkers.json())
       } catch (e) {}
     }

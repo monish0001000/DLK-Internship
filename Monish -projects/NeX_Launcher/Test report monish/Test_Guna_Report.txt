@@ -1,0 +1,98 @@
+Executive Summary Report - Test_Guna_Report
+Repository (requested): https://github.com/monish0001000/NeX_Launcher.git (branch: feature/backend)
+Local path analyzed: D:\project\DLK\Training\ReShell - Launcher -personal\NeX_Launcher
+Note: Remote fetch failed due to SSL/TLS handshake; analysis limited to local checkout. Results below reflect local code only.
+
+1) SECURITY & SECRETS EXPOSURE (CRITICAL): RESULT: PASS (local NeX_Launcher)
+- Scanned for: .env, firebase-debug.log, service account JSONs, apiKey, private_key, client_email, databaseURL.
+- Findings: No .env, firebase-debug.log, or service-account JSONs present in NeX_Launcher directory.
+- File inspected with placeholder Firebase URL:
+  - State\FirebaseStateManager.cs:11
+    private const string FirebaseUrl = "https://your-project-id.firebaseio.com/";
+  This is a placeholder (not a secret). No raw credentials found.
+- Note: Other projects under D:\project\DLK contain .env files (outside NeX_Launcher). Those are not part of the NeX_Launcher project scanned here.
+
+2) API DATA CONTRACT COMPLIANCE (Section 8): RESULT: FAIL (local NeX_Launcher)
+- Required exact fields: device_id, active_mode, last_ping, admin_uid, mode_history.
+- Local code references:
+  - State\FirebaseStateManager.cs
+    - Line 21-24: subscription path: Child("devices").Child("laptop_01").Child("active_mode")
+      (line numbers in file: active_mode at line 23 in local file)
+    - Line 47-50: writes last_ping via Child("last_ping").PutAsync(...)
+      (last_ping at line 49 in local file)
+  - MainWindow.xaml.cs
+    - Lines 64-66: switch (newMode.ToLower()) { case "mode1": ... }
+      This confirms the active_mode enum string "mode1" is used exactly (PASS for enum string requirement).
+- Missing fields: admin_uid and mode_history are NOT present anywhere in the NeX_Launcher codebase scanned. device_id is used implicitly as the child name "laptop_01" but there is no explicit device_id key stored.
+- Impact: The code as-is will function for read-only active_mode consumption and last_ping updates, but it does NOT ensure the full JSON data contract described in Section 8. Server-side or DB-side enforcement is required.
+- Remediation (exact code snippets to add):
+  A) Ensure device schema exists and explicit keys are present (add to State\FirebaseStateManager.cs).
+  Insert the following method after the Initialize subscription (suggested insertion: after line 33 in the file):
+
+public static async Task EnsureDeviceSchemaAsync(string deviceId, string adminUid)
+{
+    if (_firebaseClient == null) return;
+
+    var deviceRef = _firebaseClient.Child("devices").Child(deviceId);
+    // Ensure explicit device_id
+    await deviceRef.Child("device_id").PutAsync(deviceId);
+    // Ensure admin_uid (server must provide the correct admin UID here)
+    await deviceRef.Child("admin_uid").PutAsync(adminUid);
+    // Ensure mode_history exists as an empty array if missing
+    await deviceRef.Child("mode_history").PutAsync(new object[] { });
+}
+
+  And call it (temporary placeholder) from Initialize after creating _firebaseClient, e.g.:
+
+// after _firebaseClient = new FirebaseClient(FirebaseUrl);
+_ = EnsureDeviceSchemaAsync("laptop_01", "REPLACE_WITH_ADMIN_UID");
+
+  Note: REPLACE_WITH_ADMIN_UID must be set by the admin provisioning process; do NOT hardcode production secrets. Prefer server-side initialization or a secure admin provisioning flow.
+
+3) FIREBASE SECURITY RULES COMPLIANCE: RESULT: FAIL (no rules present in branch/local project)
+- No database.rules.json or firebase rules file found in NeX_Launcher directory.
+- Requirement: Write access to the active_mode node MUST be restricted to the authenticated admin (request.auth.uid === admin_uid). Windows client or unauthenticated users must NOT be able to write active_mode.
+- Provide corrected Realtime Database rules (save as database.rules.json in project root and deploy to project's Firebase console). Exact file content to enforce rule:
+
+{
+  "rules": {
+    "devices": {
+      "$deviceId": {
+        "active_mode": {
+          ".read": "auth != null",
+          ".write": "auth != null && auth.uid === root.child('devices').child($deviceId).child('admin_uid').val()"
+        },
+        "last_ping": {
+          // Allow device to update last_ping only if authenticated as that device's admin or via an authenticated service account provided by server
+          ".read": "auth != null",
+          ".write": "auth != null && auth.uid === root.child('devices').child($deviceId).child('admin_uid').val()"
+        },
+        ".read": "auth != null",
+        // Prevent writes to the device node except by the admin (this will also safeguard device_id, mode_history)
+        ".write": "auth != null && auth.uid === root.child('devices').child($deviceId).child('admin_uid').val()"
+      }
+    }
+  }
+}
+
+- Important: If the heartbeat (last_ping) must be written by the Windows client and the Windows client is not authenticated as the admin, then implement a secure service account or short-lived auth token mechanism. Under no circumstance should unauthenticated or generic client credentials be allowed to set active_mode.
+
+Files & exact locations referenced (local):
+- State\FirebaseStateManager.cs
+  - active_mode subscription: line ~21-25 (actual file shows active_mode on line 23)
+  - last_ping PutAsync: line ~46-50 (last_ping at line 49)
+  - Firebase URL placeholder: line 11
+- MainWindow.xaml.cs
+  - Enum check "mode1": lines 64-66
+
+Limitations and next steps:
+- Remote repository/branch fetch failed due to SSL/TLS error: "schannel: failed to receive handshake" when attempting to fetch origin feature/backend. Because of that, commit history and the remote branch content could not be inspected. This report is produced from the local NeX_Launcher project directory only.
+- Recommended actions for Guna / Integrator:
+  1. Confirm that the remote branch feature/backend is accessible; if it's a different repo than the local copy, provide network access or a repository archive for a complete scan.
+  2. Add the firebase security rules above into the project's Firebase project (database.rules.json) and enforce via CI before merge.
+  3. Ensure server-side enforcement of the data contract and admin ownership.
+  4. Avoid embedding any service account JSON or raw credentials in the repo; use secrets manager or CI environment variables.
+
+Prepared by: Automated review (local scan) on 2026-07-08T19:56:04.523+05:30
+
+End of report.
