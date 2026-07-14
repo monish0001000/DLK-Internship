@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "623310939045",
+    "firebase_url": "https://nex-launcher-69169-default-rtdb.firebaseio.com",
+    "project_id": "nex-launcher-69169",
+    "storage_bucket": "nex-launcher-69169.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:623310939045:android:9f8e4a4635d730e351be4c",
+        "android_client_info": {
+          "package_name": "com.aistudio.nexadmin.kxmpzq"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAhkqXdG_T2ZGgijc_YwmVHycJ98n1SX3w"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

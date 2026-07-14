@@ -1,0 +1,8 @@
+{
+  "name": "NeX Admin",
+  "description": "Secure, remote-controlled Windows launcher replacement administrator panel.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
