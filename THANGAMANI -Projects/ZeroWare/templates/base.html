@@ -1,0 +1,360 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZeroWare – AI Malware Intelligence</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --zw-bg: #0a0e1a;
+            --zw-card: #0f1628;
+            --zw-card2: #141c35;
+            --zw-border: #1e2d50;
+            --zw-cyan: #00d4ff;
+            --zw-green: #00ff88;
+            --zw-red: #ff4757;
+            --zw-orange: #ffa502;
+            --zw-purple: #7c4dff;
+            --zw-text: #c8d8f0;
+            --zw-muted: #5a7099;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background: var(--zw-bg);
+            color: var(--zw-text);
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            min-height: 100vh;
+        }
+
+        /* Sidebar */
+        .sidebar {
+            width: 240px;
+            min-height: 100vh;
+            background: var(--zw-card);
+            border-right: 1px solid var(--zw-border);
+            position: fixed;
+            top: 0; left: 0;
+            z-index: 100;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            padding: 24px 20px 16px;
+            border-bottom: 1px solid var(--zw-border);
+        }
+
+        .sidebar-logo .logo-icon {
+            font-size: 28px;
+            color: var(--zw-cyan);
+        }
+
+        .sidebar-logo .logo-text {
+            font-size: 20px;
+            font-weight: 800;
+            color: #fff;
+            letter-spacing: 2px;
+        }
+
+        .sidebar-logo .logo-sub {
+            font-size: 10px;
+            color: var(--zw-muted);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .sidebar-nav {
+            padding: 16px 0;
+            flex: 1;
+        }
+
+        .nav-item-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 20px;
+            color: var(--zw-muted);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+
+        .nav-item-link:hover, .nav-item-link.active {
+            color: var(--zw-cyan);
+            background: rgba(0, 212, 255, 0.06);
+            border-left-color: var(--zw-cyan);
+        }
+
+        .nav-item-link i { width: 18px; text-align: center; font-size: 15px; }
+
+        .sidebar-footer {
+            padding: 16px 20px;
+            border-top: 1px solid var(--zw-border);
+            font-size: 11px;
+            color: var(--zw-muted);
+        }
+
+        /* Main content */
+        .main-content {
+            margin-left: 240px;
+            min-height: 100vh;
+        }
+
+        .topbar {
+            background: var(--zw-card);
+            border-bottom: 1px solid var(--zw-border);
+            padding: 14px 28px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .topbar-title {
+            font-size: 18px;
+            font-weight: 700;
+            color: #fff;
+        }
+
+        .status-dot {
+            width: 8px; height: 8px;
+            background: var(--zw-green);
+            border-radius: 50%;
+            display: inline-block;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.4; }
+        }
+
+        .page-body {
+            padding: 28px;
+        }
+
+        /* Cards */
+        .zw-card {
+            background: var(--zw-card);
+            border: 1px solid var(--zw-border);
+            border-radius: 12px;
+            padding: 24px;
+        }
+
+        .zw-card-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            color: var(--zw-cyan);
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Stat cards */
+        .stat-card {
+            background: var(--zw-card);
+            border: 1px solid var(--zw-border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 36px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: var(--zw-muted);
+            margin-top: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* Badges */
+        .badge-malware { background: rgba(255,71,87,0.15); color: var(--zw-red); border: 1px solid rgba(255,71,87,0.3); }
+        .badge-safe { background: rgba(0,255,136,0.1); color: var(--zw-green); border: 1px solid rgba(0,255,136,0.3); }
+        .badge-suspicious { background: rgba(255,165,2,0.12); color: var(--zw-orange); border: 1px solid rgba(255,165,2,0.3); }
+
+        .prediction-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-weight: 700;
+            font-size: 13px;
+        }
+
+        /* Progress bars */
+        .zw-bar-wrap {
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .zw-bar {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 1s ease;
+        }
+        .bar-danger { background: linear-gradient(90deg, #ff4757, #ff6b81); }
+        .bar-warning { background: linear-gradient(90deg, #ffa502, #ffd32a); }
+        .bar-success { background: linear-gradient(90deg, #00ff88, #00d4ff); }
+        .bar-info { background: linear-gradient(90deg, #00d4ff, #7c4dff); }
+
+        /* Table */
+        .zw-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        .zw-table th {
+            padding: 10px 12px;
+            text-align: left;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--zw-muted);
+            border-bottom: 1px solid var(--zw-border);
+        }
+        .zw-table td {
+            padding: 11px 12px;
+            border-bottom: 1px solid rgba(30,45,80,0.5);
+            vertical-align: middle;
+        }
+        .zw-table tr:hover td { background: rgba(0,212,255,0.03); }
+
+        /* Score ring */
+        .score-ring-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; }
+        .score-center { position: absolute; text-align: center; }
+        .score-val { font-size: 28px; font-weight: 800; }
+        .score-lbl { font-size: 10px; color: var(--zw-muted); text-transform: uppercase; }
+
+        /* Genome stars */
+        .star-filled { color: #ffa502; }
+        .star-empty { color: var(--zw-border); }
+
+        /* Alert boxes */
+        .zw-alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+        .zw-alert-danger { background: rgba(255,71,87,0.1); border: 1px solid rgba(255,71,87,0.25); color: #ff8090; }
+        .zw-alert-warning { background: rgba(255,165,2,0.1); border: 1px solid rgba(255,165,2,0.25); color: #ffc750; }
+        .zw-alert-success { background: rgba(0,255,136,0.08); border: 1px solid rgba(0,255,136,0.2); color: #00cc70; }
+        .zw-alert-info { background: rgba(0,212,255,0.08); border: 1px solid rgba(0,212,255,0.2); color: #60d8ff; }
+
+        /* DNA badge */
+        .dna-id {
+            font-family: 'Courier New', monospace;
+            font-size: 18px;
+            font-weight: 800;
+            color: var(--zw-cyan);
+            letter-spacing: 3px;
+        }
+
+        /* Buttons */
+        .btn-zw-primary {
+            background: linear-gradient(135deg, #0088cc, #00d4ff);
+            color: #000;
+            border: none;
+            font-weight: 700;
+            border-radius: 8px;
+            padding: 10px 22px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-zw-primary:hover { transform: translateY(-1px); box-shadow: 0 4px 20px rgba(0,212,255,0.3); }
+
+        .btn-zw-danger {
+            background: rgba(255,71,87,0.15);
+            color: var(--zw-red);
+            border: 1px solid rgba(255,71,87,0.3);
+            font-weight: 600;
+            border-radius: 8px;
+            padding: 8px 16px;
+            font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: var(--zw-bg); }
+        ::-webkit-scrollbar-thumb { background: var(--zw-border); border-radius: 3px; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .sidebar { width: 60px; }
+            .sidebar-logo .logo-text, .sidebar-logo .logo-sub, .nav-item-link span { display: none; }
+            .main-content { margin-left: 60px; }
+        }
+    </style>
+    {% block extra_head %}{% endblock %}
+</head>
+<body>
+
+<!-- Sidebar -->
+<aside class="sidebar">
+    <div class="sidebar-logo">
+        <div class="logo-icon">🛡️</div>
+        <div class="logo-text">ZERO<span style="color:var(--zw-cyan)">WARE</span></div>
+        <div class="logo-sub">AI Malware Intelligence</div>
+    </div>
+    <nav class="sidebar-nav">
+        <a href="{{ url_for('index') }}" class="nav-item-link {% if request.endpoint == 'index' %}active{% endif %}">
+            <i class="fas fa-shield-alt"></i><span>Scan File</span>
+        </a>
+        <a href="{{ url_for('dashboard') }}" class="nav-item-link {% if request.endpoint == 'dashboard' %}active{% endif %}">
+            <i class="fas fa-chart-line"></i><span>Dashboard</span>
+        </a>
+        <a href="{{ url_for('history') }}" class="nav-item-link {% if request.endpoint == 'history' %}active{% endif %}">
+            <i class="fas fa-history"></i><span>Scan History</span>
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <span class="status-dot me-1"></span><span>AI Engine Active</span>
+    </div>
+</aside>
+
+<!-- Main -->
+<div class="main-content">
+    <div class="topbar">
+        <div class="topbar-title">{% block page_title %}ZeroWare{% endblock %}</div>
+        <div style="font-size:12px;color:var(--zw-muted);">
+            <span class="status-dot me-1"></span> System Online
+        </div>
+    </div>
+    <div class="page-body">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% for cat, msg in messages %}
+                <div class="alert alert-{{ cat }} alert-dismissible fade show">{{ msg }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endwith %}
+        {% block content %}{% endblock %}
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.2/js/bootstrap.bundle.min.js"></script>
+{% block scripts %}{% endblock %}
+</body>
+</html>

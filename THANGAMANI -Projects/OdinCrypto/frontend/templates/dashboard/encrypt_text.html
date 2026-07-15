@@ -1,0 +1,148 @@
+{% extends "base.html" %}
+{% block title %}Text Encryption{% endblock %}
+{% block page_title %}Text Encryption{% endblock %}
+
+{% block content %}
+<div class="section-title">Text Encryption</div>
+<p class="section-sub">Encrypt and decrypt text using AES, RSA, or Hybrid encryption</p>
+
+<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+
+  <!-- FORM -->
+  <div class="odin-card" style="flex:1;min-width:320px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-cyan"><i class="bi bi-chat-square-lock-fill"></i></div>
+      <h5>Encryption Tool</h5>
+    </div>
+
+    <form method="POST">
+      <!-- Algorithm -->
+      <div style="margin-bottom:18px">
+        <label class="form-label-odin">Algorithm</label>
+        <div class="algo-grid">
+          <button type="button" class="algo-btn selected" data-value="aes" onclick="selectAlgo(this,'aes')">
+            <i class="bi bi-lock-fill"></i> AES-256
+          </button>
+          <button type="button" class="algo-btn" data-value="rsa" onclick="selectAlgo(this,'rsa')">
+            <i class="bi bi-key-fill"></i> RSA-OAEP
+          </button>
+          <button type="button" class="algo-btn" data-value="hybrid" onclick="selectAlgo(this,'hybrid')">
+            <i class="bi bi-diagram-3-fill"></i> Hybrid
+          </button>
+        </div>
+        <input type="hidden" name="algorithm" id="algo-input" value="aes" />
+      </div>
+
+      <!-- Action -->
+      <div style="margin-bottom:14px">
+        <label class="form-label-odin">Action</label>
+        <div style="display:flex;gap:8px">
+          <label style="flex:1;cursor:pointer">
+            <input type="radio" name="action" value="encrypt" checked style="display:none" id="r-encrypt" />
+            <div class="algo-btn" id="btn-encrypt" style="text-align:center;justify-content:center" onclick="setAction('encrypt')">
+              <i class="bi bi-lock-fill"></i> Encrypt
+            </div>
+          </label>
+          <label style="flex:1;cursor:pointer">
+            <input type="radio" name="action" value="decrypt" style="display:none" id="r-decrypt" />
+            <div class="algo-btn" id="btn-decrypt" style="text-align:center;justify-content:center" onclick="setAction('decrypt')">
+              <i class="bi bi-unlock-fill"></i> Decrypt
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <!-- Key selector (RSA / Hybrid) -->
+      <div id="key-section" style="margin-bottom:14px;display:none">
+        <label class="form-label-odin">Select Key Pair</label>
+        <select name="key_id" class="form-select-odin">
+          <option value="">-- Choose a key --</option>
+          {% for kp in keys %}
+          <option value="{{ kp.id }}">{{ kp.key_name }} ({{ kp.algorithm }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <!-- Text -->
+      <div style="margin-bottom:14px">
+        <label class="form-label-odin">Text / Ciphertext</label>
+        <textarea name="text" class="form-control-odin" rows="6" placeholder="Enter text to encrypt or paste ciphertext to decrypt..." required></textarea>
+      </div>
+
+      <!-- Password (AES / private key unlock) -->
+      <div style="margin-bottom:20px">
+        <label class="form-label-odin" id="pw-label">Password (AES Key)</label>
+        <input type="password" name="password" class="form-control-odin" placeholder="Encryption password" />
+      </div>
+
+      <button type="submit" class="btn-odin btn-primary-odin" style="width:100%;justify-content:center">
+        <i class="bi bi-lock-fill"></i> <span id="submit-label">Encrypt</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- RESULT -->
+  <div style="flex:1;min-width:280px;display:flex;flex-direction:column;gap:16px">
+    {% if result %}
+    <div class="odin-card">
+      <div class="card-header-odin">
+        <div class="card-icon {% if result.action == 'encrypted' %}icon-green{% else %}icon-cyan{% endif %}">
+          <i class="bi bi-{% if result.action == 'encrypted' %}lock-fill{% else %}unlock-fill{% endif %}"></i>
+        </div>
+        <h5>{{ result.action|title }} Result</h5>
+        <span class="badge-odin badge-purple" style="margin-left:8px">{{ result.algorithm }}</span>
+      </div>
+      <div class="result-label">Output</div>
+      <div class="result-box" id="result-text">{{ result.data }}</div>
+      <div style="display:flex;gap:8px;margin-top:12px">
+        <button class="btn-odin btn-outline-odin btn-sm-odin" onclick="copyToClipboard(document.getElementById('result-text').textContent, this)">
+          <i class="bi bi-clipboard"></i> Copy
+        </button>
+        <button class="btn-odin btn-outline-odin btn-sm-odin" onclick="downloadText(document.getElementById('result-text').textContent, '{{ result.action }}.txt')">
+          <i class="bi bi-download"></i> Download
+        </button>
+      </div>
+    </div>
+    {% endif %}
+
+    <!-- INFO CARD -->
+    <div class="odin-card">
+      <div class="card-header-odin">
+        <div class="card-icon icon-yellow"><i class="bi bi-info-circle-fill"></i></div>
+        <h5>Algorithm Info</h5>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px">
+        <div><strong class="text-accent">AES-256-CBC</strong> — Symmetric encryption with PBKDF2 key derivation. Fast, suitable for any text size.</div>
+        <div><strong class="text-purple">RSA-OAEP</strong> — Asymmetric encryption using your public key. Limited to small data (~200 bytes).</div>
+        <div><strong class="text-cyan">Hybrid</strong> — AES encrypts data, RSA encrypts the AES key. Best of both worlds for any data size.</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function selectAlgo(btn, val) {
+  document.querySelectorAll('.algo-grid .algo-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('algo-input').value = val;
+  const ks = document.getElementById('key-section');
+  const pl = document.getElementById('pw-label');
+  if (val === 'aes') { ks.style.display = 'none'; pl.textContent = 'Password (AES Key)'; }
+  else { ks.style.display = ''; pl.textContent = 'Key Password (unlock private key)'; }
+}
+function setAction(a) {
+  document.getElementById('r-' + a).checked = true;
+  document.getElementById('submit-label').textContent = a === 'encrypt' ? 'Encrypt' : 'Decrypt';
+  ['encrypt','decrypt'].forEach(x => {
+    document.getElementById('btn-' + x).classList.toggle('selected', x === a);
+  });
+}
+function downloadText(text, name) {
+  const a = document.createElement('a');
+  a.href = 'data:text/plain;charset=utf-8,' + encodeURIComponent(text);
+  a.download = name; a.click();
+}
+</script>
+{% endblock %}

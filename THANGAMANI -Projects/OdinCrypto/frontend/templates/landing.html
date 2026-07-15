@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block public_content %}
+<div class="landing-page">
+  <nav class="landing-nav">
+    <div class="brand">
+      <div class="brand-icon"><i class="bi bi-shield-lock-fill"></i></div>
+      <span class="brand-name">OdinCrypto</span>
+    </div>
+    <div class="nav-links">
+      <a href="{{ url_for('main.login') }}" class="btn-odin btn-outline-odin">Login</a>
+      <a href="{{ url_for('main.register') }}" class="btn-odin btn-primary-odin">Get Started</a>
+    </div>
+  </nav>
+
+  <div class="hero-section">
+    <div class="hero-badge"><i class="bi bi-shield-fill-check"></i> Enterprise Cryptographic Platform</div>
+    <h1 class="hero-title">Secure Everything<br>With One Platform</h1>
+    <p class="hero-sub">OdinCrypto brings military-grade encryption, digital signatures, key management, and secure sharing into one modern platform.</p>
+    <div class="hero-actions">
+      <a href="{{ url_for('main.register') }}" class="btn-odin btn-primary-odin" style="font-size:15px;padding:12px 28px;">
+        <i class="bi bi-rocket-takeoff-fill"></i> Start Free
+      </a>
+      <a href="{{ url_for('main.login') }}" class="btn-odin btn-outline-odin" style="font-size:15px;padding:12px 28px;">
+        <i class="bi bi-box-arrow-in-right"></i> Sign In
+      </a>
+    </div>
+  </div>
+
+  <div class="features-grid">
+    {% set features = [
+      ('bi-key-fill','icon-blue','Key Management','Generate RSA-2048/4096 key pairs, rotate, revoke, and share via QR codes.'),
+      ('bi-file-earmark-lock-fill','icon-purple','File Encryption','AES-256 encrypt any file type — PDF, DOCX, ZIP, images, video.'),
+      ('bi-chat-square-lock-fill','icon-cyan','Text Encryption','Encrypt/decrypt text with AES, RSA, or real-world Hybrid encryption.'),
+      ('bi-pen-fill','icon-green','Digital Signatures','Sign and verify files with RSA-PSS to detect any tampering.'),
+      ('bi-hash','icon-yellow','Hash Center','SHA-256, SHA-512, BLAKE2 — compute and verify data integrity instantly.'),
+      ('bi-safe2-fill','icon-purple','Password Vault','Store passwords with AES encryption. Only you hold the master key.'),
+      ('bi-journal-lock-fill','icon-blue','Secure Notes','Create encrypted notes that only you can decrypt.'),
+      ('bi-share-fill','icon-green','Secure Sharing','Share encrypted files with expiry dates, download limits, and passwords.'),
+    ] %}
+    {% for icon, cls, title, desc in features %}
+    <div class="feature-card">
+      <div class="card-icon {{ cls }} feature-icon"><i class="bi {{ icon }}"></i></div>
+      <div class="feature-title">{{ title }}</div>
+      <div class="feature-desc">{{ desc }}</div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}

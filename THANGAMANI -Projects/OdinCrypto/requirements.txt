@@ -1,0 +1,13 @@
+# OdinCrypto - Dependencies
+# Install with: pip install -r requirements.txt
+
+Flask>=3.0.0
+cryptography>=40.0.0
+Pillow>=10.0.0
+PyJWT>=2.0.0
+
+# Note: All other functionality uses Python stdlib:
+# - sqlite3 (database)
+# - hashlib (password hashing with PBKDF2)
+# - secrets (secure random generation)
+# - base64, json, io, os (utilities)

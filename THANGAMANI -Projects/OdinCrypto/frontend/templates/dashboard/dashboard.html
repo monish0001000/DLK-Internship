@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="section-title">Welcome back, {{ user.username }} 👋</div>
+<p class="section-sub">Here's your security overview</p>
+
+<!-- STAT CARDS -->
+<div class="stat-grid" style="margin-bottom:24px">
+  <div class="stat-card purple">
+    <div class="stat-label">Key Pairs</div>
+    <div class="stat-value">{{ keys }}</div>
+    <i class="bi bi-key-fill stat-icon"></i>
+  </div>
+  <div class="stat-card blue">
+    <div class="stat-label">Shared Files</div>
+    <div class="stat-value">{{ shared }}</div>
+    <i class="bi bi-share-fill stat-icon"></i>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-label">Vault Entries</div>
+    <div class="stat-value">{{ vault }}</div>
+    <i class="bi bi-safe2-fill stat-icon"></i>
+  </div>
+  <div class="stat-card yellow">
+    <div class="stat-label">Secure Notes</div>
+    <div class="stat-value">{{ notes }}</div>
+    <i class="bi bi-journal-lock-fill stat-icon"></i>
+  </div>
+</div>
+
+<div class="d-flex gap-20 flex-wrap" style="align-items:flex-start">
+
+  <!-- SECURITY SCORE -->
+  <div class="odin-card" style="flex:0 0 260px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-purple"><i class="bi bi-shield-fill-check"></i></div>
+      <h5>Security Score</h5>
+    </div>
+    <div style="display:flex;flex-direction:column;align-items:center;gap:14px">
+      <div class="score-ring">
+        <svg width="120" height="120" viewBox="0 0 120 120">
+          <circle cx="60" cy="60" r="50" fill="none" stroke="var(--border)" stroke-width="8"/>
+          <circle id="score-circle" cx="60" cy="60" r="50" fill="none"
+            stroke="{% if score >= 75 %}var(--green){% elif score >= 50 %}var(--yellow){% else %}var(--red){% endif %}"
+            stroke-width="8" stroke-linecap="round"/>
+        </svg>
+        <div style="text-align:center">
+          <div class="score-value">{{ score }}</div>
+          <div class="score-label">/ 100</div>
+        </div>
+      </div>
+      <div class="badge-odin {% if score >= 75 %}badge-green{% elif score >= 50 %}badge-yellow{% else %}badge-red{% endif %}">
+        {% if score >= 75 %}Strong{% elif score >= 50 %}Fair{% else %}Weak{% endif %} Security
+      </div>
+    </div>
+  </div>
+
+  <!-- RECENT ACTIVITY -->
+  <div class="odin-card" style="flex:1;min-width:300px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-blue"><i class="bi bi-activity"></i></div>
+      <h5>Recent Activity</h5>
+      <a href="{{ url_for('main.audit_logs') }}" class="btn-odin btn-outline-odin btn-sm-odin" style="margin-left:auto">View All</a>
+    </div>
+    {% if logs %}
+    <div class="timeline">
+      {% for log in logs %}
+      <div class="timeline-item">
+        <div class="timeline-dot {% if log.status == 'success' %}icon-green{% else %}icon-red{% endif %}">
+          <i class="bi bi-{% if 'ENCRYPT' in log.action %}lock-fill{% elif 'KEY' in log.action %}key-fill{% elif 'LOGIN' in log.action %}box-arrow-in-right{% elif 'SIGN' in log.action %}pen-fill{% else %}activity{% endif %}"></i>
+        </div>
+        <div class="timeline-body">
+          <div class="timeline-action">{{ log.action.replace('_', ' ').title() }}</div>
+          <div class="timeline-detail">{{ log.details or '' }}</div>
+        </div>
+        <div class="timeline-time">{{ log.timestamp[11:16] }}</div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:30px 0;color:var(--text-muted)">
+      <i class="bi bi-clock-history" style="font-size:36px;opacity:.3"></i>
+      <p style="margin-top:10px;font-size:13px">No activity yet</p>
+    </div>
+    {% endif %}
+  </div>
+
+</div>
+
+<!-- QUICK ACTIONS -->
+<div style="margin-top:24px">
+  <div class="card-header-odin" style="border:none;margin-bottom:14px;padding-bottom:0">
+    <div class="card-icon icon-cyan"><i class="bi bi-lightning-fill"></i></div>
+    <h5>Quick Actions</h5>
+  </div>
+  <div style="display:flex;flex-wrap:wrap;gap:12px">
+    {% set actions = [
+      (url_for('main.keys'), 'bi-key-fill', 'Generate Key', 'purple'),
+      (url_for('main.encrypt_text'), 'bi-chat-square-lock-fill', 'Encrypt Text', 'blue'),
+      (url_for('main.encrypt_file'), 'bi-file-earmark-lock-fill', 'Encrypt File', 'cyan'),
+      (url_for('main.hash_center'), 'bi-hash', 'Compute Hash', 'yellow'),
+      (url_for('main.digital_signature'), 'bi-pen-fill', 'Sign Data', 'green'),
+      (url_for('main.vault'), 'bi-safe2-fill', 'Password Vault', 'purple'),
+    ] %}
+    {% for href, icon, label, color in actions %}
+    <a href="{{ href }}" class="odin-card odin-card-sm" style="display:flex;align-items:center;gap:10px;text-decoration:none;flex:1;min-width:160px;max-width:220px;transition:border-color .2s" onmouseover="this.style.borderColor='var(--accent)'" onmouseout="this.style.borderColor='var(--border)'">
+      <div class="card-icon icon-{{ color }}"><i class="bi {{ icon }}"></i></div>
+      <span style="font-size:13px;font-weight:600;color:var(--text-primary)">{{ label }}</span>
+    </a>
+    {% endfor %}
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>animateScoreRing('score-circle', {{ score }});</script>
+{% endblock %}

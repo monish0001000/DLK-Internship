@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block public_content %}
+<div style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:var(--bg-base)">
+  <div style="text-align:center">
+    <div style="font-size:80px;font-weight:800;background:linear-gradient(135deg,var(--accent),var(--purple));-webkit-background-clip:text;-webkit-text-fill-color:transparent">404</div>
+    <h2 style="font-size:22px;font-weight:700;margin-bottom:8px">Page Not Found</h2>
+    <p style="color:var(--text-muted);margin-bottom:24px">The page you're looking for doesn't exist.</p>
+    <a href="/" class="btn-odin btn-primary-odin"><i class="bi bi-house-fill"></i> Go Home</a>
+  </div>
+</div>
+{% endblock %}

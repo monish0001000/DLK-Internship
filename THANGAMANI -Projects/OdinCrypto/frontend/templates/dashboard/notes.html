@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% block title %}Secure Notes{% endblock %}
+{% block page_title %}Secure Notes{% endblock %}
+
+{% block content %}
+<div class="section-title">Secure Notes</div>
+<p class="section-sub">Create AES-encrypted notes that only your master key can unlock.</p>
+
+<form method="GET" style="display:flex;gap:10px;margin-bottom:20px;max-width:500px">
+  <input type="password" name="master_key" class="form-control-odin" placeholder="Master key to decrypt notes..." value="{{ master_key }}" style="flex:1" />
+  <button type="submit" class="btn-odin btn-primary-odin"><i class="bi bi-unlock-fill"></i> Unlock</button>
+</form>
+
+<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+
+  {% if unlocked %}
+  <div class="odin-card" style="flex:0 0 300px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-blue"><i class="bi bi-journal-plus"></i></div>
+      <h5>New Note</h5>
+    </div>
+    <form method="POST">
+      <input type="hidden" name="action" value="add" />
+      <input type="hidden" name="master_key" value="{{ master_key }}" />
+      <div style="margin-bottom:12px">
+        <label class="form-label-odin">Title</label>
+        <input type="text" name="title" class="form-control-odin" placeholder="Note title..." required />
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="form-label-odin">Content</label>
+        <textarea name="content" class="form-control-odin" rows="6" placeholder="Write your secret note here..." required></textarea>
+      </div>
+      <button type="submit" class="btn-odin btn-primary-odin" style="width:100%;justify-content:center">
+        <i class="bi bi-journal-lock-fill"></i> Save Encrypted
+      </button>
+    </form>
+  </div>
+  {% endif %}
+
+  <div style="flex:1;min-width:300px;display:flex;flex-direction:column;gap:14px">
+    <div style="font-size:13px;color:var(--text-muted)">
+      <i class="bi bi-journal-lock-fill" style="margin-right:6px"></i>
+      {{ total }} encrypted note(s)
+      {% if not unlocked %} — <span class="text-yellow">Locked 🔒</span>{% endif %}
+    </div>
+
+    {% if unlocked and notes %}
+      {% for note in notes %}
+      <div class="odin-card odin-card-sm">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:var(--text-primary)">{{ note.title }}</div>
+            <div style="font-size:11px;color:var(--text-muted)">{{ note.created_at[:16] }}</div>
+          </div>
+          <form method="POST" style="display:inline">
+            <input type="hidden" name="action" value="delete" />
+            <input type="hidden" name="master_key" value="{{ master_key }}" />
+            <input type="hidden" name="note_id" value="{{ note.id }}" />
+            <button type="submit" class="btn-odin btn-danger-odin btn-sm-odin" onclick="return confirm('Delete this note?')">
+              <i class="bi bi-trash"></i>
+            </button>
+          </form>
+        </div>
+        <div style="font-size:13px;color:var(--text-secondary);white-space:pre-wrap;background:var(--bg-input);padding:10px;border-radius:8px">{{ note.content }}</div>
+      </div>
+      {% endfor %}
+    {% elif not unlocked %}
+    <div class="odin-card" style="text-align:center;padding:40px">
+      <i class="bi bi-journal-lock-fill" style="font-size:48px;opacity:.2"></i>
+      <p style="margin-top:12px;color:var(--text-muted)">Enter master key to view notes</p>
+    </div>
+    {% else %}
+    <div class="odin-card" style="text-align:center;padding:40px">
+      <i class="bi bi-journal" style="font-size:48px;opacity:.2"></i>
+      <p style="margin-top:12px;color:var(--text-muted)">No secure notes yet</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

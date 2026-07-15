@@ -1,0 +1,99 @@
+{% extends "base.html" %}
+{% block title %}Password Vault{% endblock %}
+{% block page_title %}Password Vault{% endblock %}
+
+{% block content %}
+<div class="section-title">Password Vault</div>
+<p class="section-sub">Your passwords encrypted with AES-256. Only your master key can decrypt them.</p>
+
+<!-- Unlock Bar -->
+<form method="GET" style="display:flex;gap:10px;margin-bottom:20px;max-width:500px">
+  <input type="password" name="master_key" class="form-control-odin" placeholder="Enter master key to unlock vault..." value="{{ master_key }}" style="flex:1" />
+  <button type="submit" class="btn-odin btn-primary-odin"><i class="bi bi-unlock-fill"></i> Unlock</button>
+</form>
+
+<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+
+  {% if unlocked %}
+  <!-- ADD ENTRY FORM -->
+  <div class="odin-card" style="flex:0 0 280px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-green"><i class="bi bi-plus-circle-fill"></i></div>
+      <h5>Add Entry</h5>
+    </div>
+    <form method="POST">
+      <input type="hidden" name="action" value="add" />
+      <input type="hidden" name="master_key" value="{{ master_key }}" />
+      <div style="margin-bottom:12px">
+        <label class="form-label-odin">Site / App Name</label>
+        <input type="text" name="site_name" class="form-control-odin" placeholder="GitHub" required />
+      </div>
+      <div style="margin-bottom:12px">
+        <label class="form-label-odin">Username / Email</label>
+        <input type="text" name="username" class="form-control-odin" placeholder="user@example.com" required />
+      </div>
+      <div style="margin-bottom:12px">
+        <label class="form-label-odin">Password</label>
+        <input type="password" name="password" class="form-control-odin" placeholder="••••••••" required />
+      </div>
+      <div style="margin-bottom:16px">
+        <label class="form-label-odin">URL (optional)</label>
+        <input type="url" name="url" class="form-control-odin" placeholder="https://github.com" />
+      </div>
+      <button type="submit" class="btn-odin btn-primary-odin" style="width:100%;justify-content:center">
+        <i class="bi bi-safe2-fill"></i> Save Encrypted
+      </button>
+    </form>
+  </div>
+  {% endif %}
+
+  <!-- VAULT ENTRIES -->
+  <div class="odin-card" style="flex:1;min-width:300px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-purple"><i class="bi bi-safe2-fill"></i></div>
+      <h5>Vault <span class="badge-odin badge-purple" style="margin-left:8px">{{ total }} entries</span></h5>
+      {% if not unlocked %}<span style="font-size:12px;color:var(--text-muted)">— Locked 🔒</span>{% endif %}
+    </div>
+
+    {% if unlocked and items %}
+    <div style="overflow-x:auto">
+    <table class="table-odin">
+      <thead><tr><th>Site</th><th>Username</th><th>Password</th><th>URL</th><th></th></tr></thead>
+      <tbody>
+        {% for item in items %}
+        <tr>
+          <td style="font-weight:600;color:var(--text-primary)">{{ item.site_name }}</td>
+          <td class="text-sec mono">{{ item.username }}</td>
+          <td>
+            <span id="pw-{{ item.id }}" style="filter:blur(4px);font-family:monospace;cursor:pointer" onclick="this.style.filter='none'">{{ item.password }}</span>
+          </td>
+          <td>{% if item.url %}<a href="{{ item.url }}" target="_blank" class="text-accent" style="font-size:12px">Visit</a>{% else %}—{% endif %}</td>
+          <td>
+            <form method="POST">
+              <input type="hidden" name="action" value="delete" />
+              <input type="hidden" name="master_key" value="{{ master_key }}" />
+              <input type="hidden" name="entry_id" value="{{ item.id }}" />
+              <button type="submit" class="btn-odin btn-danger-odin btn-sm-odin" onclick="return confirm('Delete?')">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% elif not unlocked %}
+    <div style="text-align:center;padding:40px 0;color:var(--text-muted)">
+      <i class="bi bi-lock-fill" style="font-size:48px;opacity:.2"></i>
+      <p style="margin-top:12px">Enter your master key to unlock vault</p>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:40px 0;color:var(--text-muted)">
+      <i class="bi bi-safe2" style="font-size:48px;opacity:.2"></i>
+      <p style="margin-top:12px">No entries yet. Add your first password!</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

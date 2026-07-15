@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Hash Center{% endblock %}
+{% block page_title %}Hash Center{% endblock %}
+
+{% block content %}
+<div class="section-title">Hash Center</div>
+<p class="section-sub">Compute and verify cryptographic hashes for text or files</p>
+
+<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+
+  <div class="odin-card" style="flex:1;min-width:320px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-yellow"><i class="bi bi-hash"></i></div>
+      <h5>Hash Generator / Verifier</h5>
+    </div>
+
+    <form method="POST">
+      <div style="margin-bottom:16px">
+        <label class="form-label-odin">Algorithm</label>
+        <div class="algo-grid">
+          {% for algo, label, icon in [('sha256','SHA-256','bi-shield-fill'),('sha512','SHA-512','bi-shield-fill-check'),('blake2b','BLAKE2b','bi-cpu-fill')] %}
+          <button type="button" class="algo-btn {% if loop.first %}selected{% endif %}"
+                  onclick="selectHash(this, '{{ algo }}')">
+            <i class="bi {{ icon }}"></i> {{ label }}
+          </button>
+          {% endfor %}
+        </div>
+        <input type="hidden" name="algorithm" id="hash-algo" value="sha256" />
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label class="form-label-odin">Input Type</label>
+        <div style="display:flex;gap:8px">
+          <label style="flex:1;cursor:pointer">
+            <input type="radio" name="input_type" value="text" checked style="display:none" id="it-text" />
+            <div class="algo-btn selected" id="ibtn-text" onclick="setInputType('text')" style="justify-content:center">
+              <i class="bi bi-fonts"></i> Text
+            </div>
+          </label>
+          <label style="flex:1;cursor:pointer">
+            <input type="radio" name="input_type" value="file" style="display:none" id="it-file" />
+            <div class="algo-btn" id="ibtn-file" onclick="setInputType('file')" style="justify-content:center">
+              <i class="bi bi-file-earmark"></i> File
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div id="text-section" style="margin-bottom:14px">
+        <label class="form-label-odin">Text Input</label>
+        <textarea name="text" class="form-control-odin" rows="4" placeholder="Enter text to hash..."></textarea>
+      </div>
+
+      <div id="file-section" style="margin-bottom:14px;display:none">
+        <label class="form-label-odin">File Input</label>
+        <input type="file" name="file" class="form-control-odin" style="padding:8px" />
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label class="form-label-odin">Verify Against Hash (optional)</label>
+        <input type="text" name="verify_hash" class="form-control-odin mono" placeholder="Paste expected hash to verify integrity..." />
+      </div>
+
+      <button type="submit" class="btn-odin btn-primary-odin" style="width:100%;justify-content:center">
+        <i class="bi bi-hash"></i> Compute Hash
+      </button>
+    </form>
+  </div>
+
+  <!-- RESULT -->
+  <div style="flex:1;min-width:260px;display:flex;flex-direction:column;gap:16px">
+    {% if result %}
+    <div class="odin-card">
+      <div class="card-header-odin">
+        <div class="card-icon icon-green"><i class="bi bi-check-circle-fill"></i></div>
+        <h5>Hash Result <span class="badge-odin badge-yellow" style="margin-left:8px">{{ result.algorithm }}</span></h5>
+      </div>
+      <div class="result-label">Hash Value</div>
+      <div class="result-box" id="hash-result">{{ result.hash }}</div>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn-odin btn-outline-odin btn-sm-odin" onclick="copyToClipboard('{{ result.hash }}', this)">
+          <i class="bi bi-clipboard"></i> Copy Hash
+        </button>
+      </div>
+      {% if result.is_match is not none %}
+      <div style="margin-top:14px">
+        {% if result.is_match %}
+        <div class="alert-odin alert-success"><i class="bi bi-shield-fill-check"></i> Hash matches! File integrity verified.</div>
+        {% else %}
+        <div class="alert-odin alert-error"><i class="bi bi-shield-fill-x"></i> Hash mismatch! File may be tampered.</div>
+        {% endif %}
+      </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="odin-card">
+      <div class="card-header-odin">
+        <div class="card-icon icon-blue"><i class="bi bi-info-circle-fill"></i></div>
+        <h5>Algorithm Comparison</h5>
+      </div>
+      <table class="table-odin">
+        <thead><tr><th>Algorithm</th><th>Output Size</th><th>Use Case</th></tr></thead>
+        <tbody>
+          <tr><td class="text-accent">SHA-256</td><td>256 bits</td><td>General purpose, Bitcoin</td></tr>
+          <tr><td class="text-purple">SHA-512</td><td>512 bits</td><td>High security, passwords</td></tr>
+          <tr><td class="text-cyan">BLAKE2b</td><td>512 bits</td><td>Fastest, cryptography</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function selectHash(btn, val) {
+  document.querySelectorAll('.algo-grid .algo-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  document.getElementById('hash-algo').value = val;
+}
+function setInputType(t) {
+  document.getElementById('it-' + t).checked = true;
+  document.getElementById('text-section').style.display = t === 'text' ? '' : 'none';
+  document.getElementById('file-section').style.display = t === 'file' ? '' : 'none';
+  document.getElementById('ibtn-text').classList.toggle('selected', t==='text');
+  document.getElementById('ibtn-file').classList.toggle('selected', t==='file');
+}
+</script>
+{% endblock %}

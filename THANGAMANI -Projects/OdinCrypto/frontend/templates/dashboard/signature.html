@@ -1,0 +1,163 @@
+{% extends "base.html" %}
+{% block title %}Digital Signature{% endblock %}
+{% block page_title %}Digital Signature{% endblock %}
+
+{% block content %}
+<div class="section-title">Digital Signature</div>
+<p class="section-sub">Sign and verify data with RSA-PSS to ensure authenticity and detect tampering</p>
+
+<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+
+  <div class="odin-card" style="flex:1;min-width:320px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-green"><i class="bi bi-pen-fill"></i></div>
+      <h5>Sign / Verify</h5>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+      <div style="margin-bottom:16px">
+        <label class="form-label-odin">Action</label>
+        <div style="display:flex;gap:8px">
+          <label style="flex:1;cursor:pointer">
+            <input type="radio" name="action" value="sign" checked style="display:none" id="sa-sign" />
+            <div class="algo-btn selected" id="sbtn-sign" onclick="setSigAction('sign')" style="justify-content:center">
+              <i class="bi bi-pen-fill"></i> Sign
+            </div>
+          </label>
+          <label style="flex:1;cursor:pointer">
+            <input type="radio" name="action" value="verify" style="display:none" id="sa-verify" />
+            <div class="algo-btn" id="sbtn-verify" onclick="setSigAction('verify')" style="justify-content:center">
+              <i class="bi bi-patch-check-fill"></i> Verify
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label class="form-label-odin">Select Key</label>
+        <select name="key_id" class="form-select-odin" required>
+          <option value="">-- Choose a key pair --</option>
+          {% for kp in keys %}
+          <option value="{{ kp.id }}">{{ kp.key_name }} ({{ kp.algorithm }})</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div style="margin-bottom:14px">
+        <label class="form-label-odin">Input Type</label>
+        <div style="display:flex;gap:8px">
+          <label style="flex:1;cursor:pointer">
+            <input type="radio" name="input_type" value="text" checked style="display:none" id="sit-text" />
+            <div class="algo-btn selected" id="sibtn-text" onclick="setSigInput('text')" style="justify-content:center">
+              <i class="bi bi-fonts"></i> Text
+            </div>
+          </label>
+          <label style="flex:1;cursor:pointer">
+            <input type="radio" name="input_type" value="file" style="display:none" id="sit-file" />
+            <div class="algo-btn" id="sibtn-file" onclick="setSigInput('file')" style="justify-content:center">
+              <i class="bi bi-file-earmark"></i> File
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div id="sig-text-section" style="margin-bottom:14px">
+        <label class="form-label-odin">Text / Data</label>
+        <textarea name="text" class="form-control-odin" rows="4" placeholder="Text to sign or verify..."></textarea>
+      </div>
+
+      <div id="sig-file-section" style="margin-bottom:14px;display:none">
+        <label class="form-label-odin">File</label>
+        <input type="file" name="file" class="form-control-odin" style="padding:8px" />
+      </div>
+
+      <div id="sig-input-section" style="margin-bottom:14px;display:none">
+        <label class="form-label-odin">Signature (for verification)</label>
+        <textarea name="signature" class="form-control-odin mono" rows="3" placeholder="Paste RSA-PSS signature (Base64)..."></textarea>
+      </div>
+
+      <div style="margin-bottom:20px" id="key-pw-section">
+        <label class="form-label-odin">Key Password (to unlock private key)</label>
+        <input type="password" name="key_password" class="form-control-odin" placeholder="Your key's password" />
+      </div>
+
+      <button type="submit" class="btn-odin btn-primary-odin" style="width:100%;justify-content:center">
+        <i class="bi bi-pen-fill"></i> <span id="sig-submit">Sign Data</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- RESULT -->
+  <div style="flex:1;min-width:260px;display:flex;flex-direction:column;gap:16px">
+    {% if result %}
+    <div class="odin-card">
+      <div class="card-header-odin">
+        <div class="card-icon {% if result.action == 'signed' %}icon-green{% elif result.get('valid') %}icon-green{% else %}icon-red{% endif %}">
+          <i class="bi bi-{% if result.action == 'signed' %}pen-fill{% else %}patch-check-fill{% endif %}"></i>
+        </div>
+        <h5>{{ result.action|title }}</h5>
+      </div>
+
+      {% if result.action == 'signed' %}
+        <div class="result-label">RSA-PSS Signature (Base64)</div>
+        <div class="result-box" id="sig-result">{{ result.signature }}</div>
+        <div style="display:flex;gap:8px;margin-top:10px">
+          <button class="btn-odin btn-outline-odin btn-sm-odin" onclick="copyToClipboard(document.getElementById('sig-result').textContent, this)">
+            <i class="bi bi-clipboard"></i> Copy Signature
+          </button>
+        </div>
+        <div style="margin-top:10px;font-size:12px;color:var(--text-muted)">
+          Key used: <span class="text-accent">{{ result.key }}</span> &bull; Algorithm: RSA-PSS-SHA256
+        </div>
+      {% else %}
+        {% if result.valid %}
+        <div class="alert-odin alert-success">
+          <i class="bi bi-shield-fill-check"></i> Signature is VALID — Data is authentic and untampered
+        </div>
+        {% else %}
+        <div class="alert-odin alert-error">
+          <i class="bi bi-shield-fill-x"></i> Signature is INVALID — Data may have been tampered with
+        </div>
+        {% endif %}
+        <div style="margin-top:10px;font-size:12px;color:var(--text-muted)">
+          Verified with key: <span class="text-accent">{{ result.key }}</span>
+        </div>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="odin-card">
+      <div class="card-header-odin">
+        <div class="card-icon icon-yellow"><i class="bi bi-info-circle-fill"></i></div>
+        <h5>How Signatures Work</h5>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;color:var(--text-secondary)">
+        <div><strong class="text-green">Signing:</strong> Your private key creates a unique hash fingerprint of the data</div>
+        <div><strong class="text-cyan">Verification:</strong> Anyone with your public key can verify you signed it</div>
+        <div><strong class="text-red">Tampering:</strong> Any change to data will invalidate the signature</div>
+        <div><strong class="text-yellow">Algorithm:</strong> RSA-PSS with SHA-256 — industry standard</div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function setSigAction(a) {
+  document.getElementById('sa-' + a).checked = true;
+  document.getElementById('sig-submit').textContent = a === 'sign' ? 'Sign Data' : 'Verify Signature';
+  document.getElementById('sbtn-sign').classList.toggle('selected', a==='sign');
+  document.getElementById('sbtn-verify').classList.toggle('selected', a==='verify');
+  document.getElementById('sig-input-section').style.display = a === 'verify' ? '' : 'none';
+  document.getElementById('key-pw-section').style.display = a === 'sign' ? '' : 'none';
+}
+function setSigInput(t) {
+  document.getElementById('sit-' + t).checked = true;
+  document.getElementById('sig-text-section').style.display = t==='text' ? '' : 'none';
+  document.getElementById('sig-file-section').style.display = t==='file' ? '' : 'none';
+  document.getElementById('sibtn-text').classList.toggle('selected', t==='text');
+  document.getElementById('sibtn-file').classList.toggle('selected', t==='file');
+}
+</script>
+{% endblock %}

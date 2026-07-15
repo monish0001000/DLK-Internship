@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block title %}Key Management{% endblock %}
+{% block page_title %}Key Management{% endblock %}
+
+{% block content %}
+<div class="section-title">Key Management</div>
+<p class="section-sub">Generate, manage and share your RSA cryptographic key pairs</p>
+
+<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+
+  <!-- GENERATE FORM -->
+  <div class="odin-card" style="flex:0 0 300px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-purple"><i class="bi bi-plus-circle-fill"></i></div>
+      <h5>Generate Key Pair</h5>
+    </div>
+    <form method="POST" action="{{ url_for('main.generate_key') }}">
+      <div style="margin-bottom:14px">
+        <label class="form-label-odin">Key Name</label>
+        <input type="text" name="key_name" class="form-control-odin" placeholder="My Key 2024" required />
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="form-label-odin">Key Size</label>
+        <select name="key_size" class="form-select-odin">
+          <option value="2048">RSA-2048 (Recommended)</option>
+          <option value="4096">RSA-4096 (Maximum Security)</option>
+        </select>
+      </div>
+      <div style="margin-bottom:20px">
+        <label class="form-label-odin">Key Password (for private key storage)</label>
+        <input type="password" name="key_password" class="form-control-odin" placeholder="Strong password" required />
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">Used to encrypt your private key securely</div>
+      </div>
+      <button type="submit" class="btn-odin btn-primary-odin" style="width:100%;justify-content:center">
+        <i class="bi bi-key-fill"></i> Generate Key Pair
+      </button>
+    </form>
+  </div>
+
+  <!-- KEYS TABLE -->
+  <div class="odin-card" style="flex:1;min-width:320px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-blue"><i class="bi bi-key-fill"></i></div>
+      <h5>Your Key Pairs <span class="badge-odin badge-blue" style="margin-left:8px">{{ keys|length }}</span></h5>
+    </div>
+
+    {% if keys %}
+    <div style="overflow-x:auto">
+    <table class="table-odin">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Algorithm</th>
+          <th>Created</th>
+          <th>Status</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for kp in keys %}
+        <tr>
+          <td style="color:var(--text-primary);font-weight:600">
+            <i class="bi bi-key-fill text-accent" style="margin-right:6px"></i>{{ kp.key_name }}
+          </td>
+          <td><span class="badge-odin badge-purple">{{ kp.algorithm }}</span></td>
+          <td class="text-muted-o">{{ kp.created_at[:10] }}</td>
+          <td>
+            {% if kp.is_revoked %}
+              <span class="badge-odin badge-red"><i class="bi bi-x-circle-fill"></i> Revoked</span>
+            {% else %}
+              <span class="badge-odin badge-green"><i class="bi bi-check-circle-fill"></i> Active</span>
+            {% endif %}
+          </td>
+          <td>
+            <div style="display:flex;gap:6px;flex-wrap:wrap">
+              <a href="{{ url_for('main.download_key', key_id=kp.id, key_type='public') }}" class="btn-odin btn-outline-odin btn-sm-odin">
+                <i class="bi bi-download"></i> Public
+              </a>
+              <a href="{{ url_for('main.key_qr', key_id=kp.id) }}" class="btn-odin btn-outline-odin btn-sm-odin" target="_blank">
+                <i class="bi bi-qr-code"></i> QR
+              </a>
+              {% if not kp.is_revoked %}
+              <form method="POST" action="{{ url_for('main.revoke_key', key_id=kp.id) }}" style="display:inline" onsubmit="return confirm('Revoke this key?')">
+                <button type="submit" class="btn-odin btn-danger-odin btn-sm-odin">
+                  <i class="bi bi-slash-circle"></i> Revoke
+                </button>
+              </form>
+              {% endif %}
+            </div>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:40px 0;color:var(--text-muted)">
+      <i class="bi bi-key" style="font-size:48px;opacity:.2"></i>
+      <p style="margin-top:12px">No key pairs yet. Generate your first one!</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block title %}Settings{% endblock %}
+{% block page_title %}Settings{% endblock %}
+
+{% block content %}
+<div class="section-title">Account Settings</div>
+<p class="section-sub">Manage your account and security preferences</p>
+
+<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start;max-width:800px">
+
+  <!-- ACCOUNT INFO -->
+  <div class="odin-card" style="flex:0 0 280px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-blue"><i class="bi bi-person-fill"></i></div>
+      <h5>Account Info</h5>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <div>
+        <div class="form-label-odin">Username</div>
+        <div style="font-size:15px;font-weight:600;color:var(--text-primary)">{{ user.username }}</div>
+      </div>
+      <div>
+        <div class="form-label-odin">Email</div>
+        <div style="font-size:14px;color:var(--text-secondary)">{{ user.email }}</div>
+      </div>
+      <div>
+        <div class="form-label-odin">Account Created</div>
+        <div style="font-size:13px;color:var(--text-muted)">{{ user.created_at[:10] }}</div>
+      </div>
+      <div>
+        <div class="form-label-odin">Last Login</div>
+        <div style="font-size:13px;color:var(--text-muted)">
+          {% if user.last_login %}{{ user.last_login[:16] }}{% else %}—{% endif %}
+        </div>
+      </div>
+      <div>
+        <div class="form-label-odin">Role</div>
+        {% if user.is_admin %}
+        <span class="badge-odin badge-purple"><i class="bi bi-shield-fill"></i> Admin</span>
+        {% else %}
+        <span class="badge-odin badge-blue"><i class="bi bi-person-fill"></i> User</span>
+        {% endif %}
+      </div>
+      <div>
+        <div class="form-label-odin">Security Score</div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <div class="strength-bar" style="flex:1"><div class="strength-fill" style="width:{{ user.security_score }}%;background:{% if user.security_score >= 75 %}var(--green){% elif user.security_score >= 50 %}var(--yellow){% else %}var(--red){% endif %}"></div></div>
+          <span style="font-size:13px;font-weight:700;color:var(--text-primary)">{{ user.security_score }}/100</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CHANGE PASSWORD -->
+  <div class="odin-card" style="flex:1;min-width:260px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-yellow"><i class="bi bi-shield-lock-fill"></i></div>
+      <h5>Change Password</h5>
+    </div>
+    <form method="POST">
+      <input type="hidden" name="action" value="change_password" />
+      <div style="margin-bottom:14px">
+        <label class="form-label-odin">Current Password</label>
+        <input type="password" name="old_password" class="form-control-odin" placeholder="••••••••" required />
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="form-label-odin">New Password</label>
+        <input type="password" name="new_password" id="new-pw" class="form-control-odin" placeholder="Min 8 characters" required
+               oninput="updateStrengthBar('new-pw','np-fill','np-label')" />
+        <div style="margin-top:6px">
+          <div class="strength-bar"><div class="strength-fill" id="np-fill" style="width:0%"></div></div>
+          <span id="np-label" style="font-size:11px;color:var(--text-muted)"></span>
+        </div>
+      </div>
+      <div style="margin-bottom:20px">
+        <label class="form-label-odin">Confirm New Password</label>
+        <input type="password" name="confirm_password" class="form-control-odin" placeholder="Repeat new password" required />
+      </div>
+      <button type="submit" class="btn-odin btn-primary-odin" style="width:100%;justify-content:center">
+        <i class="bi bi-shield-lock-fill"></i> Update Password
+      </button>
+    </form>
+  </div>
+</div>
+{% endblock %}

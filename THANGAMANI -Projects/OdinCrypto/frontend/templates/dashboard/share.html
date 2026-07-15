@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block title %}Secure Sharing{% endblock %}
+{% block page_title %}Secure File Sharing{% endblock %}
+
+{% block content %}
+<div class="section-title">Secure File Sharing</div>
+<p class="section-sub">Share encrypted files with password protection, expiry dates, and download limits.</p>
+
+<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+
+  <!-- UPLOAD FORM -->
+  <div class="odin-card" style="flex:0 0 300px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-blue"><i class="bi bi-cloud-arrow-up-fill"></i></div>
+      <h5>Share a File</h5>
+    </div>
+    <form method="POST" enctype="multipart/form-data">
+      <div style="margin-bottom:14px">
+        <label class="form-label-odin">File</label>
+        <input type="file" name="file" class="form-control-odin" style="padding:8px" required />
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="form-label-odin">Password Protection (optional)</label>
+        <input type="password" name="share_password" class="form-control-odin" placeholder="Leave empty for no password" />
+      </div>
+      <div style="margin-bottom:14px">
+        <label class="form-label-odin">Expiry (days)</label>
+        <select name="expiry_days" class="form-select-odin">
+          <option value="1">1 day</option>
+          <option value="3">3 days</option>
+          <option value="7" selected>7 days</option>
+          <option value="30">30 days</option>
+        </select>
+      </div>
+      <div style="margin-bottom:20px">
+        <label class="form-label-odin">Download Limit (0 = unlimited)</label>
+        <input type="number" name="download_limit" class="form-control-odin" value="10" min="0" max="1000" />
+      </div>
+      <button type="submit" class="btn-odin btn-primary-odin" style="width:100%;justify-content:center">
+        <i class="bi bi-share-fill"></i> Create Share Link
+      </button>
+    </form>
+  </div>
+
+  <!-- SHARED FILES -->
+  <div class="odin-card" style="flex:1;min-width:300px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-cyan"><i class="bi bi-folder-fill"></i></div>
+      <h5>Your Shared Files</h5>
+    </div>
+
+    {% if shared_files %}
+    <div style="display:flex;flex-direction:column;gap:12px">
+      {% for sf in shared_files %}
+      <div style="background:var(--bg-input);border:1px solid var(--border);border-radius:10px;padding:14px">
+        <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px">
+          <div>
+            <div style="font-weight:600;color:var(--text-primary);font-size:14px">
+              <i class="bi bi-file-earmark-fill text-accent" style="margin-right:6px"></i>{{ sf.original_name }}
+            </div>
+            <div style="font-size:11px;color:var(--text-muted);margin-top:2px">
+              Created {{ sf.created_at[:10] }}
+              {% if sf.expiry_date %} · Expires {{ sf.expiry_date[:10] }}{% endif %}
+            </div>
+          </div>
+          {% if sf.is_active %}
+          <span class="badge-odin badge-green"><i class="bi bi-circle-fill" style="font-size:6px"></i> Active</span>
+          {% else %}
+          <span class="badge-odin badge-gray">Revoked</span>
+          {% endif %}
+        </div>
+
+        <div style="display:flex;gap:8px;align-items:center;margin-bottom:10px;flex-wrap:wrap">
+          <span class="badge-odin badge-blue"><i class="bi bi-download"></i> {{ sf.download_count }}/{{ sf.download_limit or '∞' }}</span>
+          {% if sf.password_hash %}
+          <span class="badge-odin badge-yellow"><i class="bi bi-lock-fill"></i> Password</span>
+          {% endif %}
+        </div>
+
+        <div style="background:var(--bg-card);border-radius:6px;padding:8px;font-family:monospace;font-size:11px;color:var(--cyan);word-break:break-all;margin-bottom:8px">
+          {{ request.host_url }}share/download/{{ sf.share_token }}
+        </div>
+
+        <div style="display:flex;gap:6px">
+          <button onclick="copyToClipboard('{{ request.host_url }}share/download/{{ sf.share_token }}', this)" class="btn-odin btn-outline-odin btn-sm-odin">
+            <i class="bi bi-clipboard"></i> Copy Link
+          </button>
+          {% if sf.is_active %}
+          <form method="POST" action="{{ url_for('main.revoke_share', sf_id=sf.id) }}" style="display:inline">
+            <button type="submit" class="btn-odin btn-danger-odin btn-sm-odin" onclick="return confirm('Revoke this share link?')">
+              <i class="bi bi-slash-circle"></i> Revoke
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+      {% endfor %}
+    </div>
+    {% else %}
+    <div style="text-align:center;padding:40px 0;color:var(--text-muted)">
+      <i class="bi bi-share" style="font-size:48px;opacity:.2"></i>
+      <p style="margin-top:12px">No shared files yet</p>
+    </div>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

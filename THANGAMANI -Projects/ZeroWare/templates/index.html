@@ -1,0 +1,455 @@
+{% extends "base.html" %}
+{% block page_title %}Scan File{% endblock %}
+{% block extra_head %}
+<style>
+.upload-zone {
+    border: 2px dashed var(--zw-border);
+    border-radius: 16px;
+    padding: 52px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s;
+    background: rgba(0,212,255,0.02);
+}
+.upload-zone:hover, .upload-zone.drag-over {
+    border-color: var(--zw-cyan);
+    background: rgba(0,212,255,0.06);
+}
+.upload-icon { font-size: 52px; color: var(--zw-cyan); margin-bottom: 16px; }
+.upload-title { font-size: 20px; font-weight: 700; color: #fff; margin-bottom: 8px; }
+.upload-sub { color: var(--zw-muted); font-size: 14px; }
+
+.scanning-overlay {
+    display: none;
+    text-align: center;
+    padding: 40px;
+}
+.scan-spinner {
+    width: 80px; height: 80px;
+    border: 3px solid var(--zw-border);
+    border-top-color: var(--zw-cyan);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.result-section { display: none; }
+
+.confidence-pill {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.sim-bar {
+    background: var(--zw-border);
+    border-radius: 4px;
+    height: 6px;
+    overflow: hidden;
+    margin-top: 4px;
+}
+.sim-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--zw-cyan), var(--zw-purple));
+    border-radius: 4px;
+    transition: width 1s ease;
+}
+
+.genome-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(30,45,80,0.5);
+    font-size: 14px;
+}
+.genome-item:last-child { border-bottom: none; }
+
+.analyst-box {
+    background: var(--zw-card2);
+    border-left: 3px solid var(--zw-cyan);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 20px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #a8c0e8;
+    font-style: italic;
+}
+
+.behavior-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+}
+.behavior-label { font-size: 13px; width: 160px; flex-shrink: 0; }
+.behavior-bar-wrap { flex: 1; margin: 0 12px; }
+.behavior-pct { font-size: 12px; font-weight: 700; width: 36px; text-align: right; }
+
+.rec-item {
+    padding: 10px 14px;
+    background: var(--zw-card2);
+    border-radius: 8px;
+    border: 1px solid var(--zw-border);
+    font-size: 13px;
+    margin-bottom: 8px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Stats bar -->
+<div class="row g-3 mb-4">
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-number" style="color:var(--zw-cyan)">{{ stats.total }}</div>
+            <div class="stat-label">Total Scans</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-number" style="color:var(--zw-red)">{{ stats.malware }}</div>
+            <div class="stat-label">Malware</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-number" style="color:var(--zw-green)">{{ stats.safe }}</div>
+            <div class="stat-label">Safe</div>
+        </div>
+    </div>
+    <div class="col-6 col-md-3">
+        <div class="stat-card">
+            <div class="stat-number" style="color:var(--zw-orange)">{{ stats.suspicious }}</div>
+            <div class="stat-label">Suspicious</div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload zone -->
+<div class="zw-card mb-4" id="uploadCard">
+    <div class="zw-card-title"><i class="fas fa-upload"></i> Upload Executable for Analysis</div>
+    <div class="upload-zone" id="dropZone">
+        <div class="upload-icon"><i class="fas fa-file-shield"></i></div>
+        <div class="upload-title">Drop your EXE / DLL / PE file here</div>
+        <div class="upload-sub mb-4">or click to browse — supports .exe, .dll, .sys, .scr files</div>
+        <button class="btn-zw-primary" onclick="document.getElementById('fileInput').click()">
+            <i class="fas fa-search me-2"></i>Choose File & Scan
+        </button>
+        <input type="file" id="fileInput" accept=".exe,.dll,.sys,.scr,.com,.bat,.bin" style="display:none">
+    </div>
+
+    <!-- Scanning animation -->
+    <div class="scanning-overlay" id="scanningOverlay">
+        <div class="scan-spinner"></div>
+        <div style="font-size:18px;font-weight:700;color:#fff;margin-bottom:8px">Analyzing File...</div>
+        <div style="color:var(--zw-muted);font-size:13px" id="scanStatus">Extracting PE features...</div>
+    </div>
+</div>
+
+<!-- Results -->
+<div class="result-section" id="resultSection">
+
+    <!-- Row 1: Prediction + Trust + ZeroDNA -->
+    <div class="row g-3 mb-3">
+        <!-- Prediction -->
+        <div class="col-md-4">
+            <div class="zw-card h-100 text-center">
+                <div class="zw-card-title justify-content-center"><i class="fas fa-brain"></i> AI Prediction</div>
+                <div id="predBadge" class="prediction-badge mb-3" style="font-size:22px;padding:12px 28px;"></div>
+                <div style="font-size:13px;color:var(--zw-muted)">Confidence</div>
+                <div id="confVal" style="font-size:32px;font-weight:800;color:#fff;"></div>
+                <div class="zw-bar-wrap mt-2">
+                    <div class="zw-bar bar-info" id="confBar" style="width:0%"></div>
+                </div>
+                <div class="mt-3 row g-2">
+                    <div class="col-6">
+                        <div style="font-size:11px;color:var(--zw-muted)">Risk Score</div>
+                        <div id="riskVal" style="font-size:20px;font-weight:800;color:var(--zw-red);"></div>
+                    </div>
+                    <div class="col-6">
+                        <div style="font-size:11px;color:var(--zw-muted)">Zero-Day %</div>
+                        <div id="zdayVal" style="font-size:20px;font-weight:800;color:var(--zw-orange);"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Trust Score -->
+        <div class="col-md-4">
+            <div class="zw-card h-100">
+                <div class="zw-card-title"><i class="fas fa-star-half-alt"></i> Trust Score</div>
+                <div class="text-center mb-3">
+                    <div id="trustScoreVal" style="font-size:52px;font-weight:900;"></div>
+                    <div style="font-size:13px;color:var(--zw-muted);">out of 100</div>
+                    <div id="trustLevelBadge" class="prediction-badge mt-2"></div>
+                </div>
+                <div id="trustDeductions" style="font-size:12px;color:var(--zw-muted);"></div>
+            </div>
+        </div>
+        <!-- ZeroDNA -->
+        <div class="col-md-4">
+            <div class="zw-card h-100">
+                <div class="zw-card-title"><i class="fas fa-dna"></i> ZeroDNA Fingerprint</div>
+                <div class="text-center mb-3">
+                    <div class="dna-id" id="dnaId">—</div>
+                    <div style="font-size:11px;color:var(--zw-muted);margin-top:4px;">AI Malware Fingerprint</div>
+                </div>
+                <div id="dnaSims"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 2: ZeroReason + Behavior -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-6">
+            <div class="zw-card h-100">
+                <div class="zw-card-title"><i class="fas fa-lightbulb"></i> ZeroReason — AI Explanation</div>
+                <div id="reasonsList"></div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="zw-card h-100">
+                <div class="zw-card-title"><i class="fas fa-biohazard"></i> Behavior Prediction</div>
+                <div id="behaviorList"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Row 3: Genome + Analyst Summary + Recommendations -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-4">
+            <div class="zw-card h-100">
+                <div class="zw-card-title"><i class="fas fa-virus"></i> Malware Genome</div>
+                <div id="genomeList"></div>
+            </div>
+        </div>
+        <div class="col-md-8">
+            <div class="zw-card h-100">
+                <div class="zw-card-title"><i class="fas fa-user-secret"></i> ZeroAnalyst Report</div>
+                <div class="analyst-box" id="analystBox"></div>
+                <div class="mt-3">
+                    <div class="zw-card-title" style="margin-top:16px;"><i class="fas fa-shield-virus"></i> Security Recommendations</div>
+                    <div id="recsList"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- File info + Actions -->
+    <div class="row g-3 mb-3">
+        <div class="col-md-8">
+            <div class="zw-card">
+                <div class="zw-card-title"><i class="fas fa-file-code"></i> File Details</div>
+                <table class="zw-table" id="fileInfoTable"></table>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="zw-card">
+                <div class="zw-card-title"><i class="fas fa-tools"></i> Actions</div>
+                <div class="d-grid gap-2">
+                    <button class="btn-zw-primary" id="btnReport" onclick="downloadReport()" style="display:none">
+                        <i class="fas fa-file-pdf me-2"></i>Download PDF Report
+                    </button>
+                    <button class="btn btn-outline-secondary" onclick="resetScan()">
+                        <i class="fas fa-redo me-2"></i>Scan Another File
+                    </button>
+                    <a href="{{ url_for('history') }}" class="btn btn-outline-secondary text-center">
+                        <i class="fas fa-history me-2"></i>View Scan History
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+{% block scripts %}
+<script>
+let currentScanId = null;
+
+// Drag & Drop
+const dropZone = document.getElementById('dropZone');
+const fileInput = document.getElementById('fileInput');
+
+dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('drag-over'); });
+dropZone.addEventListener('dragleave', () => dropZone.classList.remove('drag-over'));
+dropZone.addEventListener('drop', e => {
+    e.preventDefault();
+    dropZone.classList.remove('drag-over');
+    if (e.dataTransfer.files[0]) scanFile(e.dataTransfer.files[0]);
+});
+fileInput.addEventListener('change', () => { if (fileInput.files[0]) scanFile(fileInput.files[0]); });
+
+const scanStatuses = [
+    'Extracting PE features...',
+    'Running AI detection engine...',
+    'Generating ZeroDNA fingerprint...',
+    'Computing trust & risk scores...',
+    'Predicting behavior patterns...',
+    'Generating ZeroReason analysis...',
+    'Finalizing report...'
+];
+
+async function scanFile(file) {
+    document.getElementById('uploadCard').querySelector('.upload-zone').style.display = 'none';
+    document.getElementById('scanningOverlay').style.display = 'block';
+    document.getElementById('resultSection').style.display = 'none';
+
+    // Cycle status messages
+    let si = 0;
+    const statusEl = document.getElementById('scanStatus');
+    const statusInterval = setInterval(() => {
+        statusEl.textContent = scanStatuses[si % scanStatuses.length];
+        si++;
+    }, 800);
+
+    const fd = new FormData();
+    fd.append('file', file);
+
+    try {
+        const resp = await fetch('/scan', { method: 'POST', body: fd });
+        const data = await resp.json();
+        clearInterval(statusInterval);
+
+        if (data.error) {
+            alert('Error: ' + data.error);
+            resetScan();
+            return;
+        }
+
+        renderResults(data);
+    } catch (err) {
+        clearInterval(statusInterval);
+        alert('Scan failed: ' + err.message);
+        resetScan();
+    }
+}
+
+function renderResults(d) {
+    document.getElementById('scanningOverlay').style.display = 'none';
+    document.getElementById('resultSection').style.display = 'block';
+
+    currentScanId = d.scan_id;
+    const pred = d.prediction;
+    const label = pred.label;
+
+    // Prediction badge
+    const colorMap = { Malware: 'var(--zw-red)', Safe: 'var(--zw-green)', Suspicious: 'var(--zw-orange)' };
+    const iconMap = { Malware: '☣️', Safe: '✅', Suspicious: '⚠️' };
+    const classMap = { Malware: 'badge-malware', Safe: 'badge-safe', Suspicious: 'badge-suspicious' };
+    const pb = document.getElementById('predBadge');
+    pb.className = 'prediction-badge ' + (classMap[label] || '');
+    pb.innerHTML = iconMap[label] + ' ' + label;
+
+    document.getElementById('confVal').textContent = pred.confidence.toFixed(1) + '%';
+    document.getElementById('confBar').style.width = pred.confidence + '%';
+    document.getElementById('riskVal').textContent = d.risk_score + '/100';
+    document.getElementById('zdayVal').textContent = d.zeroday_prob + '%';
+
+    // Trust
+    const trust = d.trust;
+    const tc = document.getElementById('trustScoreVal');
+    tc.textContent = trust.score;
+    tc.style.color = trust.score >= 75 ? 'var(--zw-green)' : trust.score >= 45 ? 'var(--zw-orange)' : 'var(--zw-red)';
+    const tlb = document.getElementById('trustLevelBadge');
+    tlb.textContent = trust.level + ' Trust';
+    tlb.className = 'prediction-badge ' + (trust.score >= 75 ? 'badge-safe' : trust.score >= 45 ? 'badge-suspicious' : 'badge-malware');
+    const td = document.getElementById('trustDeductions');
+    td.innerHTML = (trust.deductions || []).map(x => `<div style="padding:3px 0;border-bottom:1px solid var(--zw-border);">⚠ ${x}</div>`).join('');
+
+    // ZeroDNA
+    document.getElementById('dnaId').textContent = d.zerodna.dna_id;
+    const sims = d.zerodna.similarities || [];
+    document.getElementById('dnaSims').innerHTML = sims.map(s => `
+        <div class="mb-2">
+            <div style="display:flex;justify-content:space-between;font-size:13px;">
+                <span>${s.name}</span><span style="font-weight:700;color:var(--zw-cyan)">${s.similarity}%</span>
+            </div>
+            <div class="sim-bar"><div class="sim-fill" style="width:${s.similarity}%"></div></div>
+        </div>
+    `).join('');
+
+    // Reasons
+    const reasons = d.reasons || [];
+    document.getElementById('reasonsList').innerHTML = reasons.map(r => `
+        <div class="zw-alert ${r.icon === '🔴' ? 'zw-alert-danger' : r.icon === '🟠' ? 'zw-alert-warning' : 'zw-alert-success'}">
+            <span>${r.icon}</span><span>${r.text}</span>
+        </div>
+    `).join('');
+
+    // Behaviors
+    const beh = d.behaviors || {};
+    const barClass = p => p >= 75 ? 'bar-danger' : p >= 50 ? 'bar-warning' : 'bar-success';
+    document.getElementById('behaviorList').innerHTML = Object.entries(beh).map(([name, pct]) => `
+        <div class="behavior-row">
+            <span class="behavior-label">${name}</span>
+            <div class="behavior-bar-wrap">
+                <div class="zw-bar-wrap"><div class="zw-bar ${barClass(pct)}" style="width:${pct}%"></div></div>
+            </div>
+            <span class="behavior-pct" style="color:${pct>=75?'var(--zw-red)':pct>=50?'var(--zw-orange)':'var(--zw-green)'}">${pct}%</span>
+        </div>
+    `).join('');
+
+    // Genome
+    const genome = d.genome || {};
+    document.getElementById('genomeList').innerHTML = Object.entries(genome).map(([trait, stars]) => `
+        <div class="genome-item">
+            <span>${trait}</span>
+            <span>${'★'.repeat(stars)}<span class="star-empty">${'★'.repeat(5-stars)}</span></span>
+        </div>
+    `).join('');
+
+    // Analyst
+    document.getElementById('analystBox').textContent = d.analyst_summary || '';
+
+    // Recommendations
+    document.getElementById('recsList').innerHTML = (d.recommendations || []).map(r => `
+        <div class="rec-item">${r}</div>
+    `).join('');
+
+    // File info
+    const f = d.features || {};
+    const rows = [
+        ['File Name', d.file_name],
+        ['File Size', formatBytes(f.file_size || 0)],
+        ['MD5', f.md5 || '—'],
+        ['SHA256', (f.sha256 || '—').substring(0, 32) + '...'],
+        ['Sections', f.num_sections || '—'],
+        ['Entropy', (f.overall_entropy || 0).toFixed(3)],
+        ['Imported DLLs', f.num_imported_dlls || 0],
+        ['Imported APIs', f.num_imported_apis || 0],
+        ['Suspicious APIs', f.suspicious_api_count || 0],
+        ['Signed', f.has_signature ? '✅ Yes' : '❌ No'],
+        ['Packed', f.is_packed ? '🔴 Yes' : '🟢 No'],
+        ['Scan Time', d.scan_duration + 's'],
+    ];
+    document.getElementById('fileInfoTable').innerHTML = rows.map(([k,v]) => `
+        <tr><td style="color:var(--zw-muted);width:140px;font-size:12px;font-weight:600">${k}</td>
+        <td style="font-size:12px;font-family:monospace;word-break:break-all">${v}</td></tr>
+    `).join('');
+
+    document.getElementById('btnReport').style.display = '';
+}
+
+function downloadReport() {
+    if (currentScanId) window.open('/report/' + currentScanId, '_blank');
+}
+
+function resetScan() {
+    document.getElementById('uploadCard').querySelector('.upload-zone').style.display = '';
+    document.getElementById('scanningOverlay').style.display = 'none';
+    document.getElementById('resultSection').style.display = 'none';
+    document.getElementById('fileInput').value = '';
+    currentScanId = null;
+}
+
+function formatBytes(b) {
+    if (b < 1024) return b + ' B';
+    if (b < 1048576) return (b/1024).toFixed(1) + ' KB';
+    return (b/1048576).toFixed(2) + ' MB';
+}
+</script>
+{% endblock %}

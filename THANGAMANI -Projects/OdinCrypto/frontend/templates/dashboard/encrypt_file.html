@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}File Encryption{% endblock %}
+{% block page_title %}File Encryption{% endblock %}
+
+{% block content %}
+<div class="section-title">File Encryption</div>
+<p class="section-sub">Encrypt and decrypt files using AES-256. Supports PDF, DOCX, ZIP, images, and more.</p>
+
+<div style="display:flex;gap:20px;flex-wrap:wrap;align-items:flex-start">
+
+  <div class="odin-card" style="flex:1;min-width:320px">
+    <div class="card-header-odin">
+      <div class="card-icon icon-purple"><i class="bi bi-file-earmark-lock-fill"></i></div>
+      <h5>Encrypt / Decrypt File</h5>
+    </div>
+
+    <form method="POST" enctype="multipart/form-data">
+      <div style="margin-bottom:16px">
+        <label class="form-label-odin">Action</label>
+        <div style="display:flex;gap:8px">
+          <label style="flex:1;cursor:pointer">
+            <input type="radio" name="action" value="encrypt" checked style="display:none" id="fa-enc" />
+            <div class="algo-btn selected" id="fbtn-enc" onclick="setFileAction('encrypt')" style="justify-content:center">
+              <i class="bi bi-lock-fill"></i> Encrypt File
+            </div>
+          </label>
+          <label style="flex:1;cursor:pointer">
+            <input type="radio" name="action" value="decrypt" style="display:none" id="fa-dec" />
+            <div class="algo-btn" id="fbtn-dec" onclick="setFileAction('decrypt')" style="justify-content:center">
+              <i class="bi bi-unlock-fill"></i> Decrypt File
+            </div>
+          </label>
+        </div>
+      </div>
+
+      <div style="margin-bottom:16px">
+        <label class="form-label-odin">Select File</label>
+        <div id="drop-zone" style="border:2px dashed var(--border);border-radius:10px;padding:36px;text-align:center;cursor:pointer;transition:border-color .2s"
+             ondragover="event.preventDefault();this.style.borderColor='var(--accent)'"
+             ondragleave="this.style.borderColor='var(--border)'"
+             ondrop="handleDrop(event)"
+             onclick="document.getElementById('file-input').click()">
+          <i class="bi bi-cloud-arrow-up-fill" style="font-size:36px;color:var(--text-muted)"></i>
+          <p style="margin:10px 0 4px;color:var(--text-secondary);font-weight:600">Drop file here or click to browse</p>
+          <p style="font-size:12px;color:var(--text-muted)">PDF, DOCX, TXT, ZIP, PNG, JPG, MP4 • Max 100MB</p>
+          <div id="file-name" style="margin-top:10px;font-size:13px;color:var(--accent-light);font-weight:600"></div>
+        </div>
+        <input type="file" name="file" id="file-input" style="display:none" onchange="showFileName(this)" />
+      </div>
+
+      <div style="margin-bottom:20px">
+        <label class="form-label-odin">Encryption Password</label>
+        <input type="password" name="password" class="form-control-odin" placeholder="Strong password (remember it!)" required />
+        <div style="font-size:11px;color:var(--text-muted);margin-top:4px">You'll need this exact password to decrypt the file</div>
+      </div>
+
+      <button type="submit" class="btn-odin btn-primary-odin" style="width:100%;justify-content:center">
+        <i class="bi bi-lock-fill"></i> <span id="f-submit-label">Encrypt File</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- RESULT + INFO -->
+  <div style="flex:0 0 300px;display:flex;flex-direction:column;gap:16px">
+    {% if result %}
+    <div class="odin-card">
+      <div class="card-header-odin">
+        <div class="card-icon icon-green"><i class="bi bi-check-circle-fill"></i></div>
+        <h5>{{ result.action|title }}ed Successfully</h5>
+      </div>
+      {% if result.action == 'encrypted' %}
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">
+        <strong class="text-accent">{{ result.original }}</strong> → <strong class="text-green">{{ result.filename }}</strong>
+      </p>
+      <a href="{{ url_for('main.download_encrypted', filename=result.filename) }}" class="btn-odin btn-success-odin" style="width:100%;justify-content:center">
+        <i class="bi bi-download"></i> Download Encrypted File
+      </a>
+      {% else %}
+      <p style="font-size:13px;color:var(--text-secondary);margin-bottom:12px">
+        File decrypted: <strong class="text-cyan">{{ result.filename }}</strong>
+      </p>
+      <a href="{{ url_for('main.download_decrypted', filename=result.filename) }}" class="btn-odin btn-success-odin" style="width:100%;justify-content:center">
+        <i class="bi bi-download"></i> Download Decrypted File
+      </a>
+      {% endif %}
+    </div>
+    {% endif %}
+
+    <div class="odin-card">
+      <div class="card-header-odin">
+        <div class="card-icon icon-yellow"><i class="bi bi-info-circle-fill"></i></div>
+        <h5>How It Works</h5>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px;font-size:13px;color:var(--text-secondary)">
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div class="badge-odin badge-purple" style="min-width:24px;justify-content:center">1</div>
+          <div>Your file is read and encrypted using <strong class="text-accent">AES-256-CBC</strong></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div class="badge-odin badge-blue" style="min-width:24px;justify-content:center">2</div>
+          <div>The key is derived from your password using <strong class="text-accent">PBKDF2-SHA256</strong></div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div class="badge-odin badge-cyan" style="min-width:24px;justify-content:center">3</div>
+          <div>Output is saved as <strong class="text-green">.odenc</strong> format with embedded metadata</div>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-start">
+          <div class="badge-odin badge-green" style="min-width:24px;justify-content:center">4</div>
+          <div>To decrypt, upload the <strong>.odenc</strong> file with the same password</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function showFileName(input) {
+  if (input.files[0]) {
+    document.getElementById('file-name').textContent = '📄 ' + input.files[0].name;
+  }
+}
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('drop-zone').style.borderColor = 'var(--border)';
+  const f = e.dataTransfer.files[0];
+  if (f) {
+    const dt = new DataTransfer();
+    dt.items.add(f);
+    document.getElementById('file-input').files = dt.files;
+    document.getElementById('file-name').textContent = '📄 ' + f.name;
+  }
+}
+function setFileAction(a) {
+  document.getElementById('fa-' + (a==='encrypt'?'enc':'dec')).checked = true;
+  document.getElementById('f-submit-label').textContent = a === 'encrypt' ? 'Encrypt File' : 'Decrypt File';
+  document.getElementById('fbtn-enc').classList.toggle('selected', a==='encrypt');
+  document.getElementById('fbtn-dec').classList.toggle('selected', a==='decrypt');
+}
+</script>
+{% endblock %}

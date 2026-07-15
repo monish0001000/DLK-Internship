@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block title %}Audit Logs{% endblock %}
+{% block page_title %}Audit Logs{% endblock %}
+
+{% block content %}
+<div class="section-title">Audit Logs</div>
+<p class="section-sub">Complete activity history — {{ total }} total events</p>
+
+<div class="odin-card">
+  <div style="overflow-x:auto">
+  <table class="table-odin">
+    <thead>
+      <tr><th>Time</th><th>Action</th><th>Details</th><th>IP</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      {% for log in logs %}
+      <tr>
+        <td class="text-muted-o mono" style="font-size:12px;white-space:nowrap">{{ log.timestamp[:19] }}</td>
+        <td>
+          <div style="display:flex;align-items:center;gap:8px">
+            <div class="card-icon {% if 'ENCRYPT' in log.action %}icon-blue{% elif 'KEY' in log.action %}icon-purple{% elif 'LOGIN' in log.action %}icon-green{% elif 'SIGN' in log.action %}icon-cyan{% elif 'VAULT' in log.action %}icon-yellow{% else %}icon-blue{% endif %}" style="width:26px;height:26px;font-size:12px">
+              <i class="bi bi-{% if 'ENCRYPT' in log.action %}lock-fill{% elif 'KEY' in log.action %}key-fill{% elif 'LOGIN' in log.action %}box-arrow-in-right{% elif 'SIGN' in log.action %}pen-fill{% elif 'VAULT' in log.action %}safe2-fill{% elif 'HASH' in log.action %}hash{% else %}activity{% endif %}"></i>
+            </div>
+            <span style="font-weight:600;font-size:13px;color:var(--text-primary)">{{ log.action.replace('_',' ').title() }}</span>
+          </div>
+        </td>
+        <td class="text-sec" style="font-size:13px">{{ log.details or '—' }}</td>
+        <td class="text-muted-o mono" style="font-size:12px">{{ log.ip_address or '—' }}</td>
+        <td><span class="badge-odin {% if log.status == 'success' %}badge-green{% else %}badge-red{% endif %}">{{ log.status }}</span></td>
+      </tr>
+      {% else %}
+      <tr><td colspan="5" style="text-align:center;padding:40px;color:var(--text-muted)">No audit logs yet</td></tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+
+  {% if pages > 1 %}
+  <div class="pagination-odin" style="margin-top:16px">
+    {% if page > 1 %}<a href="{{ url_for('main.audit_logs', page=page-1) }}" class="page-btn">← Prev</a>{% endif %}
+    {% for p in range(1, pages+1) %}
+      <a href="{{ url_for('main.audit_logs', page=p) }}" class="page-btn {% if p == page %}active{% endif %}">{{ p }}</a>
+    {% endfor %}
+    {% if page < pages %}<a href="{{ url_for('main.audit_logs', page=page+1) }}" class="page-btn">Next →</a>{% endif %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block page_title %}Scan #{{ scan.id }} — {{ scan.file_name }}{% endblock %}
+{% block content %}
+
+<div class="d-flex gap-2 mb-4">
+    <a href="{{ url_for('history') }}" class="btn btn-outline-secondary btn-sm">← Back to History</a>
+    <a href="/report/{{ scan.id }}" class="btn-zw-primary btn-sm" style="text-decoration:none">
+        <i class="fas fa-file-pdf me-1"></i>Download PDF Report
+    </a>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-3">
+        <div class="zw-card text-center">
+            <div class="zw-card-title justify-content-center">Prediction</div>
+            <div class="prediction-badge
+                {% if scan.prediction == 'Malware' %}badge-malware
+                {% elif scan.prediction == 'Safe' %}badge-safe
+                {% else %}badge-suspicious{% endif %}"
+                style="font-size:20px;padding:12px 24px;margin:0 auto">
+                {{ scan.prediction }}
+            </div>
+            <div style="margin-top:12px;font-size:28px;font-weight:800;color:#fff">{{ scan.confidence|round(1) }}%</div>
+            <div style="color:var(--zw-muted);font-size:12px">Confidence</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="zw-card text-center">
+            <div class="zw-card-title justify-content-center">Trust Score</div>
+            <div style="font-size:52px;font-weight:900;color:
+                {% if scan.trust_score >= 75 %}var(--zw-green)
+                {% elif scan.trust_score >= 45 %}var(--zw-orange)
+                {% else %}var(--zw-red){% endif %}">{{ scan.trust_score }}</div>
+            <div style="color:var(--zw-muted);font-size:12px">out of 100</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="zw-card text-center">
+            <div class="zw-card-title justify-content-center">Risk Score</div>
+            <div style="font-size:52px;font-weight:900;color:var(--zw-red)">{{ scan.risk_score }}</div>
+            <div style="color:var(--zw-muted);font-size:12px">out of 100</div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="zw-card text-center">
+            <div class="zw-card-title justify-content-center">Zero-Day Risk</div>
+            <div style="font-size:52px;font-weight:900;color:var(--zw-orange)">{{ scan.zeroday_prob }}%</div>
+            <div style="color:var(--zw-muted);font-size:12px">probability</div>
+        </div>
+    </div>
+</div>
+
+<div class="row g-3 mb-3">
+    <div class="col-md-6">
+        <div class="zw-card">
+            <div class="zw-card-title"><i class="fas fa-file-code"></i> File Information</div>
+            <table class="zw-table">
+                <tr><td style="color:var(--zw-muted);font-size:12px">File Name</td><td style="font-family:monospace;font-size:12px">{{ scan.file_name }}</td></tr>
+                <tr><td style="color:var(--zw-muted);font-size:12px">File Size</td><td style="font-size:12px">{{ scan.file_size }} bytes</td></tr>
+                <tr><td style="color:var(--zw-muted);font-size:12px">MD5</td><td style="font-family:monospace;font-size:11px">{{ scan.md5 }}</td></tr>
+                <tr><td style="color:var(--zw-muted);font-size:12px">SHA256</td><td style="font-family:monospace;font-size:11px;word-break:break-all">{{ scan.sha256 }}</td></tr>
+                <tr><td style="color:var(--zw-muted);font-size:12px">ZeroDNA ID</td><td style="font-family:monospace;font-size:14px;color:var(--zw-cyan);font-weight:800">{{ scan.zerodna_id }}</td></tr>
+                <tr><td style="color:var(--zw-muted);font-size:12px">Scan Date</td><td style="font-size:12px">{{ scan.scan_date }}</td></tr>
+                <tr><td style="color:var(--zw-muted);font-size:12px">Scan Duration</td><td style="font-size:12px">{{ scan.scan_duration }}s</td></tr>
+            </table>
+        </div>
+    </div>
+    <div class="col-md-6">
+        <div class="zw-card">
+            <div class="zw-card-title"><i class="fas fa-lightbulb"></i> AI Explanation</div>
+            {% for r in scan.reasons %}
+            <div class="zw-alert {% if '🔴' in r.icon %}zw-alert-danger{% elif '🟠' in r.icon %}zw-alert-warning{% else %}zw-alert-success{% endif %} mb-2">
+                <span>{{ r.icon }}</span><span>{{ r.text }}</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</div>
+
+{% if scan.behaviors %}
+<div class="zw-card mb-3">
+    <div class="zw-card-title"><i class="fas fa-biohazard"></i> Behavior Predictions</div>
+    <div class="row g-3">
+    {% for b, p in scan.behaviors.items() %}
+        <div class="col-md-4">
+            <div style="display:flex;justify-content:space-between;font-size:13px;margin-bottom:4px">
+                <span>{{ b }}</span>
+                <span style="font-weight:700;color:{% if p >= 75 %}var(--zw-red){% elif p >= 50 %}var(--zw-orange){% else %}var(--zw-green){% endif %}">{{ p }}%</span>
+            </div>
+            <div class="zw-bar-wrap">
+                <div class="zw-bar {% if p >= 75 %}bar-danger{% elif p >= 50 %}bar-warning{% else %}bar-success{% endif %}" style="width:{{ p }}%"></div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+{% if scan.recommendations %}
+<div class="zw-card">
+    <div class="zw-card-title"><i class="fas fa-shield-virus"></i> Security Recommendations</div>
+    {% for r in scan.recommendations %}
+    <div style="padding:10px 14px;background:var(--zw-card2);border-radius:8px;border:1px solid var(--zw-border);font-size:13px;margin-bottom:8px">{{ r }}</div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endblock %}

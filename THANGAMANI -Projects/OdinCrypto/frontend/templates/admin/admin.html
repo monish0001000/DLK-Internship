@@ -1,0 +1,101 @@
+{% extends "base.html" %}
+{% block title %}Admin Panel{% endblock %}
+{% block page_title %}Admin Panel{% endblock %}
+
+{% block content %}
+<div class="section-title">Admin Panel</div>
+<p class="section-sub">Manage users, view statistics, and control platform access</p>
+
+<!-- STATS -->
+<div class="stat-grid" style="margin-bottom:24px">
+  <div class="stat-card blue">
+    <div class="stat-label">Total Users</div>
+    <div class="stat-value">{{ users|length }}</div>
+    <i class="bi bi-people-fill stat-icon"></i>
+  </div>
+  <div class="stat-card green">
+    <div class="stat-label">Active Users</div>
+    <div class="stat-value">{{ active_users }}</div>
+    <i class="bi bi-person-check-fill stat-icon"></i>
+  </div>
+  <div class="stat-card purple">
+    <div class="stat-label">Total Keys</div>
+    <div class="stat-value">{{ total_keys }}</div>
+    <i class="bi bi-key-fill stat-icon"></i>
+  </div>
+  <div class="stat-card yellow">
+    <div class="stat-label">Audit Events</div>
+    <div class="stat-value">{{ total_logs }}</div>
+    <i class="bi bi-journal-text stat-icon"></i>
+  </div>
+</div>
+
+<!-- USER TABLE -->
+<div class="odin-card">
+  <div class="card-header-odin">
+    <div class="card-icon icon-purple"><i class="bi bi-people-fill"></i></div>
+    <h5>User Management</h5>
+  </div>
+  <div style="overflow-x:auto">
+  <table class="table-odin">
+    <thead>
+      <tr>
+        <th>ID</th><th>Username</th><th>Email</th><th>Role</th>
+        <th>Score</th><th>Status</th><th>Joined</th><th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for u in users %}
+      <tr>
+        <td class="text-muted-o">#{{ u['id'] }}</td>
+        <td style="font-weight:600;color:var(--text-primary)">
+          <i class="bi bi-person-fill text-accent" style="margin-right:5px"></i>{{ u['username'] }}
+        </td>
+        <td class="text-sec">{{ u['email'] }}</td>
+        <td>
+          {% if u['is_admin'] %}
+          <span class="badge-odin badge-purple"><i class="bi bi-shield-fill"></i> Admin</span>
+          {% else %}
+          <span class="badge-odin badge-gray">User</span>
+          {% endif %}
+        </td>
+        <td>
+          <div style="display:flex;align-items:center;gap:6px">
+            <div class="strength-bar" style="width:60px"><div class="strength-fill" style="width:{{ u['security_score'] }}%;background:{% if u['security_score']>=75%}var(--green){%elif u['security_score']>=50%}var(--yellow){%else%}var(--red){%endif%}"></div></div>
+            <span style="font-size:12px;color:var(--text-muted)">{{ u['security_score'] }}</span>
+          </div>
+        </td>
+        <td>
+          {% if u['is_active'] %}
+          <span class="badge-odin badge-green"><i class="bi bi-circle-fill" style="font-size:6px"></i> Active</span>
+          {% else %}
+          <span class="badge-odin badge-red">Disabled</span>
+          {% endif %}
+        </td>
+        <td class="text-muted-o" style="font-size:12px">{{ u['created_at'][:10] }}</td>
+        <td>
+          <div style="display:flex;gap:6px">
+            {% if not u['is_admin'] %}
+            <form method="POST" action="{{ url_for('main.toggle_user', uid=u['id']) }}" style="display:inline">
+              <button type="submit" class="btn-odin {% if u['is_active'] %}btn-warning-odin{% else %}btn-success-odin{% endif %} btn-sm-odin">
+                <i class="bi bi-{% if u['is_active'] %}pause-fill{% else %}play-fill{% endif %}"></i>
+                {{ 'Disable' if u['is_active'] else 'Enable' }}
+              </button>
+            </form>
+            <form method="POST" action="{{ url_for('main.delete_user', uid=u['id']) }}" style="display:inline" onsubmit="return confirm('Delete user {{ u['username'] }}? This is irreversible.')">
+              <button type="submit" class="btn-odin btn-danger-odin btn-sm-odin">
+                <i class="bi bi-trash"></i>
+              </button>
+            </form>
+            {% else %}
+            <span style="font-size:12px;color:var(--text-muted)">Protected</span>
+            {% endif %}
+          </div>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  </div>
+</div>
+{% endblock %}
