@@ -1,0 +1,6 @@
+{
+  "name": "Lumina Kiosk",
+  "description": "Secure glassmorphic kiosk desktop with fully interactive application simulators like Edge, Word, Excel, Paint, Calculator, and Camera.",
+  "requestFramePermissions": ["camera"],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

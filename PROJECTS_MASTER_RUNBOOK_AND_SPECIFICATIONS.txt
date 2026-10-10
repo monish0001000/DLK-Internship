@@ -1,0 +1,388 @@
+====================================================================================================
+           CYBERSECURITY & ENTERPRISE SYSTEMS SUITE - MASTER PROJECT ANALYSIS & RUNBOOK
+====================================================================================================
+Document Generation Time : 2026-10-09 21:05:00 IST
+Host Environment         : Windows (Session 1)
+Python Runtime           : C:\Users\LENOVO\AppData\Local\Programs\Python\Python311\python.exe (Python 3.11.9)
+Node.js Runtime          : v24.18.0 / npm 11.16.0
+.NET Runtime             : Microsoft .NET SDK 8.0.425
+Workspace Base Path      : D:\project\DLK\Monish -projects
+
+====================================================================================================
+TABLE OF CONTENTS
+====================================================================================================
+1. EXECUTIVE SUMMARY & ACTIVE ECOSYSTEM STATUS MATRIX
+2. PROJECT 1: ASYMMETRIC ENCRYPTION & KEY MANAGEMENT DASHBOARD
+3. PROJECT 2: PENETRATION-TESTING MULTI-AGENT FRAMEWORK (DLK PENTEST / PENTESTER)
+4. PROJECT 3: AI/ML STATIC THREAT INTELLIGENCE PIPELINE (MALWARE DETECTOR / MERSAL)
+5. PROJECT 4: REAL-TIME NETWORK ANOMALY DETECTION ENGINE (NEMESYS TRAFFIC SENTINEL)
+6. PROJECT 5: ENTERPRISE ENDPOINT DETECTION & RESPONSE PLATFORM (SENTINELX EDR)
+7. PROJECT 6: HARDENED DEFENSIVE KIOSK SHELL PLATFORM (NEX_LAUNCHER / RESHELL)
+8. COMPREHENSIVE RUNBOOK: STARTUP, VERIFICATION, CREDENTIALS & SHUTDOWN PROCEDURES
+
+====================================================================================================
+1. EXECUTIVE SUMMARY & ACTIVE ECOSYSTEM STATUS MATRIX
+====================================================================================================
+This portfolio comprises six specialized cybersecurity and defensive systems covering cryptographic key
+lifecycle management, autonomous red-team assistance, static binary ML threat classification,
+unsupervised network anomaly detection, distributed host-level threat telemetry, and hardened endpoint
+kiosk isolation.
+
+----------------------------------------------------------------------------------------------------
+PROJECT                        TYPE / RUNTIME         PORT / URL          STATUS      PID / ENGINE
+----------------------------------------------------------------------------------------------------
+1. Asymmetric Encryption       Streamlit (Python 3.11) http://localhost:8501   RUNNING     PID 3352 (python)
+2. DLK Pentest Framework      Multi-Agent Web/HTTP   http://localhost:8080   RUNNING     PID 5524 (python)
+3. ML Malware Detector        Flask + ML (Py 3.11)   http://127.0.0.1:5000   RUNNING     PID 3592 (python)
+4. Nemesys Traffic Sentinel   FastAPI Backend (Py)   http://127.0.0.1:8000   RUNNING     PID 14688 (python)
+                              React/Vite Frontend    http://localhost:5173   RUNNING     PID 15260 (node)
+5. SentinelX OSQuery EDR       FastAPI Backend (Py)   http://127.0.0.1:8002   RUNNING     PID 4292 (python)
+                              React/Vite Frontend    http://localhost:5174   RUNNING     PID 5768 (node)
+6. NeX_Launcher Kiosk Shell   WPF GUI (.NET 8.0)     Interactive Desktop GUI RUNNING     PID 13920 (WPF)
+----------------------------------------------------------------------------------------------------
+
+====================================================================================================
+2. PROJECT 1: ASYMMETRIC ENCRYPTION & KEY MANAGEMENT DASHBOARD
+====================================================================================================
+[Location]
+  Directory: D:\project\DLK\Monish -projects\Asymmetric_Encryption_Dashboard
+  Entry Point: app.py
+
+[Architectural Overview & Purpose]
+  A cryptographic laboratory and operational key management workstation designed to simplify,
+  visualize, and safely execute public-key encryption, signature operations, and key pair lifecycle
+  management without requiring low-level OpenSSL command-line mastery.
+
+[Core Cryptographic Primitives Supported]
+  1. RSA (Rivest-Shamir-Adleman):
+     - Configurable moduli: 1024, 2048, 3072, and 4096 bits.
+     - Hardened padding scheme: PKCS#1 OAEP (Optimal Asymmetric Encryption Padding) with SHA-256.
+     - Prevents chosen-ciphertext attacks and textbook RSA mathematical factorization vulnerabilities.
+  2. ECC (Elliptic Curve Cryptography):
+     - NIST prime curves supported: P-256 (secp256r1), P-384, and P-521.
+     - Provides military-grade resistance with short key lengths (256-bit ECC matches 3072-bit RSA).
+     - Employs ECDH (Elliptic Curve Diffie-Hellman) combined with ephemeral symmetric key wrapping.
+  3. ElGamal Cryptosystem:
+     - Multiplicative cyclic group encryption based on the Discrete Logarithm Problem (DLP).
+     - Incorporates random ephemeral session keys per encryption to ensure semantic security.
+  4. Rabin Cryptosystem:
+     - Asymmetric encryption provably equivalent to integer factorization difficulty.
+     - Quadrating residue calculations modulo n = p*q (demonstrative research implementation).
+
+[Key Modules & Code Artifacts]
+  - app.py: Streamlit reactive dashboard organizing tabs for Encryption/Decryption, Key Generation,
+    Key Export/Import (PEM/Base64), and Interactive Cryptographic Theory documentation.
+  - encryption_algorithms.py: Core object-oriented cryptographic engine utilizing `pycryptodome`
+    and `cryptography` primitives.
+
+[Working Steps & Usage]
+  1. Key Pair Generation:
+     - Select target algorithm (RSA, ECC, ElGamal, or Rabin).
+     - Specify bit size (e.g., RSA 2048 or ECC SECP256R1) and click "Generate Keys".
+     - Download the PEM/Base64 formatted Public Key (.pub) and Private Key (.pem).
+  2. Message Encryption:
+     - Navigate to "Encrypt/Decrypt" tab.
+     - Paste recipient public key, enter plaintext payload.
+     - The engine outputs standard Base64 armored ciphertext.
+  3. Message Decryption:
+     - Paste private key and ciphertext into the Decrypt pane.
+     - The engine verifies padding, computes private key exponentiation/scalar multiplication,
+       and recovers plaintext.
+
+====================================================================================================
+3. PROJECT 2: PENETRATION-TESTING MULTI-AGENT FRAMEWORK (DLK PENTEST / PENTESTER)
+====================================================================================================
+[Location]
+  Directory: D:\project\DLK\Monish -projects\DLK pentest\Pentester
+  Supplementary Suite: D:\project\DLK\Monish -projects\DLK pentest\pentest-copilot
+                       D:\project\DLK\Monish -projects\DLK pentest\Pentest _AI_mons\PentestGPT
+  Web Dashboard: D:\project\DLK\Monish -projects\DLK pentest\Pentester\index.html
+
+[Architectural Overview & Purpose]
+  An AI-augmented penetration testing command center designed for orchestrating attack simulation,
+  vulnerability enumeration, and automated security assessment workflows. It provides an intuitive,
+  cyberpunk-themed dark SOC interface with real-time execution feedback, multi-agent model selection,
+  and session tree persistence.
+
+[Components & Capabilities]
+  1. Pentester Multi-Agent SOC UI:
+     - Tree-based project workspace organizer (Pentester, Sentinel_SOCv2, target scopes).
+     - Interactive task execution monitor showing live process tracing (`python -m http.server 8080`).
+     - Dynamic LLM model selector: Gemini 3.1 Pro (High Reasoning), Gemini 3.5 Flash (Fast Triage),
+       and Claude Opus 4.6 (Deep Thinking).
+     - Interactive multi-turn conversational console with agent response parsing and execution prompts.
+  2. Pentest-Copilot Subsystem:
+     - Autonomous penetration testing agent designed to interact with target attack boxes (Kali Linux).
+     - Automated looping capability: runs terminal diagnostics, parses stdout, identifies vulnerabilities,
+       and formulates next-hop exploits.
+     - Integrated security tooling modules: Nmap network mapping, Gobuster directory discovery,
+       Burp Suite proxy repeater automation, and web exploitation payloads.
+  3. PentestGPT Subsystem:
+     - Structured LLM pentesting workflow utilizing parsing sub-tasks, reasoning sub-tasks, and execution
+       sub-tasks for complex CTF and network penetration scenarios.
+
+[Working Steps & Usage]
+  1. Open web browser to: http://localhost:8080
+  2. Select target project profile on the left sidebar (e.g., "Cyberpunk Cybersecurity Multi-Agent Dashboard").
+  3. Choose desired AI reasoning model via the bottom model picker.
+  4. Input attack vectors, target IP/CIDR ranges, or vulnerability queries in the terminal input box.
+  5. Monitor active task state and output recommendations rendered directly on the thread canvas.
+
+====================================================================================================
+4. PROJECT 3: AI/ML STATIC THREAT INTELLIGENCE PIPELINE (MALWARE DETECTOR / MERSAL)
+====================================================================================================
+[Location]
+  Directory: D:\project\DLK\Monish -projects\Malware Detector
+  Script: malware_detector[dlk_intern].py
+  Web Dashboard: http://127.0.0.1:5000
+
+[Architectural Overview & Purpose]
+  A high-speed static malware analysis engine and threat intelligence classifier built for Windows
+  Portable Executable (PE) binaries. Eliminates the overhead and sandbox evasion vulnerabilities of
+  pure dynamic execution by extracting structural, mathematical, and cryptographic indicators from
+  unpacked binaries to produce actionable MITRE ATT&CK kill-chain assessments.
+
+[Core Technical Pipeline]
+  1. Static Binary Parsing (`pefile`):
+     - Parses DOS headers, PE Headers, Optional Headers, Section Headers, and Import Tables.
+     - Inspects Import Address Table (IAT) for suspicious Windows API calls correlated with malware:
+       VirtualAlloc, VirtualAllocEx, WriteProcessMemory, CreateRemoteThread (Process Injection T1055),
+       URLDownloadToFile, WinHttpOpen (Command and Control T1071), RegSetValueEx (Persistence T1547).
+  2. Shannon Entropy Computation:
+     - Evaluates bit randomness: H(X) = -sum(P(x_i) * log2(P(x_i))) across the entire binary and
+       per section (.text, .data, .rsrc).
+     - Entropy scores approaching 7.2 - 8.0 bits/byte identify packed, obfuscated, or encrypted payloads
+       designed to evade endpoint signatures.
+  3. Signature-Based Verification (`yara-python`):
+     - Compiles custom rules including EICAR test signatures and suspicious shell invocation strings
+       (e.g., powershell.exe -ExecutionPolicy Bypass, cmd.exe /c).
+  4. Machine Learning Classifier:
+     - Model: Scikit-learn Logistic Regression trained over a 5-dimensional feature vector:
+       [global_entropy, suspicious_api_count, high_entropy_sections, yara_hits, size_kb].
+     - Output: Continuous risk probability score from 0 to 100.
+       * >= 75: MALWARE (Red verdict, immediate quarantine recommendation)
+       * 40 - 74: SUSPICIOUS (Yellow verdict, manual triage indicated)
+       * < 40: CLEAN (Green verdict, normal executable characteristics)
+  5. MITRE ATT&CK Kill Chain Narration:
+     - Correlates static detections into narrative attack sequences across Execution, Persistence,
+       Defense Evasion, and C2 stages.
+
+[Working Steps & Usage]
+  1. Open http://127.0.0.1:5000 in your browser to access the MERSAL interface.
+  2. Drag and drop any Windows `.exe` or binary sample into the upload arena.
+  3. The backend calculates entropy, parses imports, evaluates YARA rules, and feeds features to the ML model.
+  4. View the final risk verdict, section entropy graph, matched threat rules, and MITRE mapping.
+
+====================================================================================================
+5. PROJECT 4: REAL-TIME NETWORK ANOMALY DETECTION ENGINE (NEMESYS TRAFFIC SENTINEL)
+====================================================================================================
+[Location]
+  Directory: D:\project\DLK\Monish -projects\Network Traffic anomaly Detector
+  Backend: D:\project\DLK\Monish -projects\Network Traffic anomaly Detector\backend (FastAPI)
+  Frontend: D:\project\DLK\Monish -projects\Network Traffic anomaly Detector\nemesys-traffic-dashboard (React/Vite)
+  Agents: telemetry_agent.py, tshark_agent.py
+
+[Architectural Overview & Purpose]
+  NEMESYS is a distributed, unsupervised Machine Learning Network Intrusion Detection System (NIDS)
+  and SOC-style monitoring console. Designed to detect zero-day volumetric anomalies, port scans,
+  data exfiltration spikes, and DoS attacks across heterogeneous endpoint nodes without requiring
+  pre-labeled threat datasets.
+
+[Architecture & Mechanics]
+  1. Distributed Telemetry Capture:
+     - `telemetry_agent.py`: High-efficiency, cross-platform telemetry agent utilizing `psutil` and
+       `requests` to collect socket connection states, bytes sent/received, packet rates, and protocol counts.
+     - `tshark_agent.py`: Raw PCAP stream parser leveraging Wireshark's CLI `tshark` engine for deep
+       flow inspection.
+  2. Central Ingestion & WebSocket Broadcast (FastAPI - Port 8000):
+     - Asynchronous ingestion endpoints (`POST /api/telemetry`) aggregate flows from distributed nodes.
+     - Real-time WebSocket channel (`/ws`) broadcasts scored packet metrics to all connected dashboards.
+  3. Unsupervised ML Engine (Isolation Forest):
+     - Isolates observations by randomly selecting features and splitting values.
+     - Anomalies require significantly fewer splits to isolate than normal baseline traffic.
+     - Outputs continuous anomaly scores mapped into Severity bands: LOW, MEDIUM, HIGH, and CRITICAL.
+  4. Real-Time SOC Dashboard (React + Vite + TailwindCSS - Port 5173):
+     - Live throughput graphs (Bits Per Second / Packets Per Second).
+     - Top Talkers visualization and protocol distribution breakdown (TCP, UDP, ICMP, DNS).
+     - Instant Anomaly Alert feed with node-level isolation filters.
+
+[Working Steps & Usage]
+  1. Backend running at: http://127.0.0.1:8000 (Docs at http://127.0.0.1:8000/docs).
+  2. Frontend active at: http://localhost:5173.
+  3. Start a telemetry agent on any host to pump live traffic:
+     Command: python telemetry_agent.py --url http://127.0.0.1:8000
+  4. Observe incoming flow lines, PPS spikes, and anomaly alerts updating in real-time on port 5173.
+
+====================================================================================================
+6. PROJECT 5: ENTERPRISE ENDPOINT DETECTION & RESPONSE PLATFORM (SENTINELX EDR)
+====================================================================================================
+[Location]
+  Directory: D:\project\DLK\Monish -projects\OS query project\SentinelX EDR
+  Backend: D:\project\DLK\Monish -projects\OS query project\SentinelX EDR\backend (FastAPI - Port 8002)
+  Frontend: D:\project\DLK\Monish -projects\OS query project\SentinelX EDR\frontend (React/Vite - Port 5174)
+  Database: sentinelx.db (SQLite with SQLAlchemy ORM)
+
+[Architectural Overview & Purpose]
+  An enterprise-grade Endpoint Detection and Response (EDR) platform powered by OSQuery distributed
+  endpoint SQL telemetry, Sigma detection rules, AI-driven incident investigation, and external Threat
+  Intelligence correlation. SentinelX delivers unified host monitoring, alert triage, and response actions.
+
+[Core Engines & Subsystems]
+  1. OSQuery Telemetry Hub:
+     - Interrogates operating system state using SQL queries against virtual tables:
+       `processes`, `process_open_sockets`, `registry`, `users`, `startup_items`, `listening_ports`.
+  2. Sigma Detection Rule Engine:
+     - Real-time event matching against industry-standard Sigma YAML rules.
+     - Detects living-off-the-land binaries (LOLBins), LSASS memory dumping, credential harvesting,
+       and suspicious persistence mechanisms.
+  3. AI-Driven Security Copilot & Investigation:
+     - Integrates Gemini 2.0 Flash / OpenRouter AI models.
+     - Automates incident summarization, assesses threat confidence, and generates containment plans.
+  4. Threat Intelligence Feeds:
+     - Synchronizes Indicators of Compromise (IOCs) with AbuseIPDB, AlienVault OTX, and MalwareBazaar.
+  5. Incident Response & Containment:
+     - Host network quarantine, process termination, and persistence registry remediation.
+
+[Access Credentials & Authentication]
+  Default Admin Username : admin@sentinelx.local
+  Default Admin Password : Admin@123
+  Database Location      : D:\project\DLK\Monish -projects\OS query project\SentinelX EDR\backend\sentinelx.db
+
+[Working Steps & Usage]
+  1. Open http://localhost:5174 in your browser.
+  2. Log in using `admin@sentinelx.local` / `Admin@123`.
+  3. Navigate through:
+     - Dashboard: Overall endpoint health, active alerts, and MITRE heatmap.
+     - Alerts: Triage alerts generated by OSQuery events and Sigma rule matches.
+     - Endpoints: Inspect host CPU, memory, operating system, and network configurations.
+     - OSQuery Console: Execute live SQL queries (e.g., `SELECT * FROM processes WHERE on_disk = 0;`).
+     - AI Investigator: Generate automated root-cause analysis on flagged alerts.
+
+====================================================================================================
+7. PROJECT 6: HARDENED DEFENSIVE KIOSK SHELL PLATFORM (NEX_LAUNCHER / RESHELL)
+====================================================================================================
+[Location]
+  Directory: D:\project\DLK\Monish -projects\ReShell - Launcher -personal\winclient\NeX_Launcher
+  Release Executable: D:\project\DLK\Monish -projects\ReShell - Launcher -personal\winclient\NeX_Launcher\bin\Debug\net8.0-windows\NeX_Launcher_v1.exe
+  Storage Sandbox Root: C:\NeX_Storage (Downloads, System, Wallpapers)
+  Log File: C:\NeX_Storage\System\Crash_Log.txt
+
+[Architectural Overview & Purpose]
+  A specialized Windows enterprise kiosk shell and containment workspace built on .NET 8.0 WPF.
+  Designed for public kiosks, testing stations, and secure enterprise terminal environments where
+  arbitrary execution of untrusted system utilities (cmd, powershell, regedit) must be locked down,
+  while providing a curated Cyberpunk desktop environment with real-time remote cloud administration.
+
+[Security Features & Hardening Measures]
+  1. Desktop Shell Replacement & Window Geometry:
+     - Configured as a top-level centered desktop shell (`1100 x 680` on 1366x768 display bounds).
+     - Controlled taskbar containing segregated sandboxed applications: Edge, Settings, Secure Storage,
+       DataSheet (Excel sandbox), Document (Wordpad), PaintCanvas, and Media Hub.
+  2. Isolated Application Sandboxing (`C:\NeX_Storage`):
+     - Enforces local directory isolation for downloaded executables and user files.
+     - Dynamically monitors `C:\NeX_Storage\Downloads` and registers authorized desktop launch tiles.
+  3. Remote MDM Management (Firebase Realtime Database Synchronization):
+     - `FirebaseSyncManager` polls active policy state nodes.
+     - Supports remote mode switching: `DEFAULT` (standard kiosk access) vs `LOCKDOWN` (full screen blackout
+       suspension overlay with administrative lock).
+     - Remote software deployment: downloads authorized application payloads on demand.
+     - Remote application kill and file revocation capabilities.
+  4. Stability & Lifecycle Enhancements Applied:
+     - Configured `ShutdownMode="OnExplicitShutdown"` to prevent accidental shell termination.
+     - Managed lifecycle hooks ensuring graceful background operation without crashing unmanaged runtimes.
+
+[Working Steps & Usage]
+  1. The launcher starts automatically in windowed kiosk mode centered on the desktop.
+  2. Launch approved sandboxed applications directly by clicking their desktop icons.
+  3. Access the Secure Storage Sandbox pane to browse isolated files within `C:\NeX_Storage`.
+  4. Switch settings and system diagnostic views via the taskbar cog icon.
+  5. Review real-time operational traces in `C:\NeX_Storage\System\Crash_Log.txt`.
+
+====================================================================================================
+8. COMPREHENSIVE RUNBOOK: STARTUP, VERIFICATION, CREDENTIALS & SHUTDOWN PROCEDURES
+====================================================================================================
+
+[A. Global Startup Script (PowerShell)]
+To launch all projects simultaneously in separate background processes:
+
+```powershell
+# 1. Asymmetric Encryption Dashboard (Port 8501)
+Start-Process -FilePath "C:\Users\LENOVO\AppData\Local\Programs\Python\Python311\python.exe" `
+  -ArgumentList "-m streamlit run app.py --server.port 8501 --server.headless true" `
+  -WorkingDirectory "D:\project\DLK\Monish -projects\Asymmetric_Encryption_Dashboard"
+
+# 2. DLK Pentest Multi-Agent UI (Port 8080)
+Start-Process -FilePath "C:\Users\LENOVO\AppData\Local\Programs\Python\Python311\python.exe" `
+  -ArgumentList "-m http.server 8080 --directory `"D:\project\DLK\Monish -projects\DLK pentest\Pentester`""
+
+# 3. Malware Detector (Port 5000)
+Start-Process -FilePath "C:\Users\LENOVO\AppData\Local\Programs\Python\Python311\python.exe" `
+  -ArgumentList "`"D:\project\DLK\Monish -projects\Malware Detector\malware_detector[dlk_intern].py`"" `
+  -WorkingDirectory "D:\project\DLK\Monish -projects\Malware Detector"
+
+# 4. NEMESYS Traffic Sentinel (Backend: 8000, Frontend: 5173)
+Start-Process -FilePath "C:\Users\LENOVO\AppData\Local\Programs\Python\Python311\python.exe" `
+  -ArgumentList "-m uvicorn main:app --host 127.0.0.1 --port 8000" `
+  -WorkingDirectory "D:\project\DLK\Monish -projects\Network Traffic anomaly Detector\backend"
+
+Start-Process -FilePath "npm.cmd" `
+  -ArgumentList "run dev -- --host 127.0.0.1 --port 5173" `
+  -WorkingDirectory "D:\project\DLK\Monish -projects\Network Traffic anomaly Detector\nemesys-traffic-dashboard"
+
+# 5. SentinelX EDR (Backend: 8002, Frontend: 5174)
+Start-Process -FilePath "C:\Users\LENOVO\AppData\Local\Programs\Python\Python311\python.exe" `
+  -ArgumentList "-m uvicorn main:app --host 127.0.0.1 --port 8002" `
+  -WorkingDirectory "D:\project\DLK\Monish -projects\OS query project\SentinelX EDR\backend"
+
+Start-Process -FilePath "npm.cmd" `
+  -ArgumentList "run dev -- --host 127.0.0.1 --port 5174" `
+  -WorkingDirectory "D:\project\DLK\Monish -projects\OS query project\SentinelX EDR\frontend"
+
+# 6. NeX_Launcher Kiosk Platform
+Start-Process -FilePath "D:\project\DLK\Monish -projects\ReShell - Launcher -personal\winclient\NeX_Launcher\bin\Debug\net8.0-windows\NeX_Launcher_v1.exe"
+```
+
+[B. Health Verification Script]
+Run this command in PowerShell to inspect all ports and confirm full ecosystem health:
+
+```powershell
+$ports = @(5000, 5173, 5174, 8000, 8002, 8080, 8501)
+$ports | ForEach-Object {
+    $c = Get-NetTCPConnection -LocalPort $_ -State Listen -ErrorAction SilentlyContinue | Select-Object -First 1
+    [PSCustomObject]@{
+        Port = $_
+        Status = if ($c) { "ONLINE" } else { "OFFLINE" }
+        PID = if ($c) { $c.OwningProcess } else { "-" }
+    }
+} | Format-Table -AutoSize
+Get-Process -Name "NeX_Launcher_v1" -ErrorAction SilentlyContinue | Select-Object Id, ProcessName, Responding
+```
+
+[C. Port & Access URL Summary]
+  - Asymmetric Encryption Dashboard : http://localhost:8501
+  - DLK Pentest Multi-Agent UI      : http://localhost:8080
+  - ML Malware Detector (MERSAL)    : http://127.0.0.1:5000
+  - NEMESYS Network Dashboard       : http://localhost:5173  (API: http://127.0.0.1:8000/docs)
+  - SentinelX EDR SOC Console       : http://localhost:5174  (API: http://127.0.0.1:8002/docs)
+    -> Login: admin@sentinelx.local / Admin@123
+  - NeX_Launcher Kiosk Platform     : Native Centered Windows Desktop GUI
+
+[D. Graceful Teardown Script]
+To stop all servers and processes cleanly when testing is complete:
+
+```powershell
+# Stop all web servers listening on target ports
+@(5000, 5173, 5174, 8000, 8002, 8080, 8501) | ForEach-Object {
+    $conns = Get-NetTCPConnection -LocalPort $_ -State Listen -ErrorAction SilentlyContinue
+    foreach ($c in $conns) {
+        Stop-Process -Id $c.OwningProcess -Force -ErrorAction SilentlyContinue
+    }
+}
+# Stop NeX Launcher GUI
+Stop-Process -Name "NeX_Launcher_v1" -Force -ErrorAction SilentlyContinue
+Write-Host "All project instances safely terminated."
+```
+
+====================================================================================================
+                                      END OF MASTER SPECIFICATION
+====================================================================================================
